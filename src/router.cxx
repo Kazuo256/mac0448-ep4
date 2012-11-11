@@ -37,6 +37,7 @@ const static pair<string, MsgHandler> handler_list[] = {
   make_pair("DISTVECTOR", &Router::receive_distvector),
   make_pair("ROUTE_MS", &Router::route_ms),
   make_pair("ROUTE_HOP", &Router::route_hop),
+  make_pair("ROUTE", &Router::route),
 };
 
 const static pair<string, MsgHandler> *const handler_end =
@@ -292,7 +293,40 @@ void Router::route_hop (unsigned id_sender, stringstream& args) {
   dv_handle_route(args, mem_fn(&Dist::get_hops), "HOP");
 }
 
+void Router::route (unsigned id_sender, stringstream& args) {
+  string token;
+  args >> token;
+  string msg;
+  getline(args, msg);
+  if (token == "|")
+    receive_msg(id_sender, msg);
+  else {
+    unsigned  next;
+    stringstream(token) >> next;
+    network_->send(id(), next, msg);
+  }
+}
+
 //== Métodos para calcular rotas ==//
+
+void Router::route_msg (unsigned id_target, const string& msg) {
+  stringstream routing_msg;
+  unsigned router = id_target;
+  std::stack<unsigned> stack;
+  stack.push(id_target);
+  while (ls_route_ms_[router] != router) {
+    stack.push(ls_route_ms_[router]);
+    router = ls_route_ms_[router];
+  }
+  while (!stack.empty()) {
+    routing_msg << sep << stack.top();
+    stack.pop();
+  }
+  routing_msg << sep << "|" << sep << msg;
+  stringstream args;
+  args << routing_msg;
+  route(id(), args);
+}
 
 bool Router::comp_ms (unsigned id_1, unsigned id_2) const {
   return ls_cost_ms_[id_1] > ls_cost_ms_[id_2];
