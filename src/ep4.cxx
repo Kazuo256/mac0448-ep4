@@ -60,9 +60,9 @@ static bool handle_command (stringstream& command);
 void init_simulation (const std::string& topology_file, 
                       const std::string& multicast_type ) {
   if (multicast_type == "SOURCE" || multicast_type == "source") {
-    routerlogic = NULL;  
+    routerlogic = new RouterLogic;  
   } else {
-    routerlogic = NULL;
+    routerlogic = new RouterLogic;
   }
   create_network(topology_file);
 }
