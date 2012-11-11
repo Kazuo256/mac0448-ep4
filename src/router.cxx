@@ -1,5 +1,6 @@
 
 #include "router.h"
+#include "routerlogic.h"
 #include "network.h"
 
 #include <utility>
@@ -56,6 +57,8 @@ void Router::receive_msg (unsigned id_sender, const string& msg) {
   unordered_map<string, MsgHandler>::const_iterator it = handlers.find(header);
   if (it != handlers.end())
     (this->*(it->second))(id_sender, tokens);
+  else
+    logic_->handle_msg(id(), id_sender, header, tokens);
 }
 
 // Métodos de bootstrap
