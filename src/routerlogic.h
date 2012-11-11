@@ -1,6 +1,9 @@
 #ifndef EP4_ROUTERLOGIC_H_
 #define EP4_ROUTERLOGIC_H_
 
+#include <string>
+#include <sstream>
+
 namespace ep4 {
 
 class RouterLogic {

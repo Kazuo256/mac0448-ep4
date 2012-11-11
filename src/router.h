@@ -28,6 +28,10 @@ class Router {
     void start_up ();
     void linkstate_begin ();
     void distvector_begin ();
+    //== Métodos de grupos multicast ==//
+    void make_group (unsigned group_id);
+    void join_group (unsigned group_id);
+    void leave_group (unsigned group_id);
     //== Métodos que tratam mensagens ==//
     void acknowledge_hello (unsigned id_sender, std::stringstream& args);
     void acknowledge_neighbor (unsigned id_sender, std::stringstream& args);
