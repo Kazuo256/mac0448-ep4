@@ -41,7 +41,6 @@ class Router {
     void broadcast (const std::string& msg);
     void unicast (unsigned id_target, const std::string& msg);
     double linkstate_route_ms (unsigned id_target, std::vector<unsigned>& route);
-    double linkstate_route_hop (unsigned id_target, std::vector<unsigned>& route);
     double delay (unsigned origin, unsigned destiny);
     bool comp_ms (unsigned id_1, unsigned id_2) const;
     bool comp_hop (unsigned id_1, unsigned id_2) const;
@@ -65,9 +64,6 @@ class Router {
     std::tr1::unordered_set<unsigned>             pending_linkstates_;
     std::vector<unsigned>                         ls_route_ms_;
     std::vector<double>                           ls_cost_ms_;
-    std::vector<unsigned>                         ls_route_hop_;
-    std::vector<double>                           ls_cost_hop_;
-    //== Informações de vetor de distância ==//
     //== Outros ==//
     // Método para formatar a saída do roteador.
     std::ostream& output () const {

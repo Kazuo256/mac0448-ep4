@@ -293,10 +293,6 @@ bool Router::comp_ms (unsigned id_1, unsigned id_2) const {
   return ls_cost_ms_[id_1] > ls_cost_ms_[id_2];
 }
 
-bool Router::comp_hop (unsigned id_1, unsigned id_2) const {
-  return ls_cost_hop_[id_1] > ls_cost_hop_[id_2];
-}
-
 double Router::delay (unsigned origin, unsigned destiny) {
   LinkState& link_origin = linkstates_[origin];
   for (std::list<Router::Neighbor>::iterator it = link_origin.begin(); it != link_origin.end(); ++it)
@@ -346,47 +342,6 @@ double Router::linkstate_route_ms (unsigned id_target, vector<unsigned>& route) 
     stack.pop();
   }
   return ls_cost_ms_[id_target];
-}
-
-double Router::linkstate_route_hop (unsigned id_target, vector<unsigned>& route) {
-  if (ls_route_hop_.empty() && ls_cost_hop_.empty()) {
-    ls_route_hop_.resize(linkstates_.size(), INFINITO_UNSIGNED);
-    ls_cost_hop_.resize(linkstates_.size(), INFINITO_DOUBLE);
-  }
-  if (ls_route_hop_[id_target] == INFINITO_UNSIGNED) {
-    std::priority_queue<unsigned, vector<unsigned>, std::tr1::function<bool (unsigned, unsigned)> > 
-        PQ(bind(&Router::comp_hop, this, _1, _2));
-    ls_cost_hop_[id_] = 0.0;
-    ls_route_hop_[id_] = id_;
-    PQ.push(id_);
-    while (!PQ.empty()) {
-      unsigned n = PQ.top();
-      PQ.pop();
-      LinkState& link_n = linkstates_[n];
-      for (std::list<Router::Neighbor>::iterator it = link_n.begin(); it != link_n.end(); ++it) {
-        if (ls_cost_hop_[it->id] == INFINITO_DOUBLE) {
-          ls_cost_hop_[it->id] = ls_cost_hop_[n] + 1;
-          ls_route_hop_[it->id] = n;
-          PQ.push(it->id);
-        } else if (ls_cost_hop_[it->id] > ls_cost_hop_[n] + 1) {
-          ls_cost_hop_[it->id] = ls_cost_hop_[n] + 1;
-          ls_route_hop_[it->id] = n;
-        }
-      }
-    }
-  }
-  unsigned router = id_target;
-  std::stack<unsigned> stack;
-  stack.push(id_target);
-  while (ls_route_hop_[router] != router) {
-    stack.push(ls_route_hop_[router]);
-    router = ls_route_hop_[router];
-  }
-  while (!stack.empty()) {
-    route.push_back(stack.top());
-    stack.pop();
-  }
-  return ls_cost_hop_[id_target];
 }
 
 // Informações de debug
