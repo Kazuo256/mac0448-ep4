@@ -40,6 +40,7 @@ class Router {
     void route (unsigned id_sender, std::stringstream& args);
     //== Métodos para calcular rotas ==//
     // Usados para estado de enlace:
+    void broadcast (cosnt std::string& msg);
     void route_msg (unsigned id_target, const std::string& msg);
     double linkstate_route_ms (unsigned id_target, std::vector<unsigned>& route);
     double linkstate_route_hop (unsigned id_target, std::vector<unsigned>& route);

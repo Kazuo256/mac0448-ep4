@@ -309,6 +309,10 @@ void Router::route (unsigned id_sender, stringstream& args) {
 
 //== Métodos para calcular rotas ==//
 
+void Router::broadcast (const string& msg) {
+  network_->local_broadcast(id(), msg);
+}
+
 void Router::route_msg (unsigned id_target, const string& msg) {
   stringstream routing_msg;
   unsigned router = id_target;
