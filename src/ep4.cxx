@@ -94,6 +94,10 @@ void run_prompt (const string& progname) {
   cout << endl;
 }
 
+void clean_up () {
+  delete routerlogic;
+}
+
 static void simulate_network () {
   while (network.pending_msgs()) {
     Packet packet = network.next_msg();

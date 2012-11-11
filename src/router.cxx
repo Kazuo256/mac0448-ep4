@@ -308,6 +308,10 @@ void Router::route (unsigned id_sender, stringstream& args) {
   }
 }
 
+void Router::add_group (unsigned id_sender, stringstream& args) {
+
+}
+
 //== Métodos para calcular rotas ==//
 
 void Router::broadcast (const string& msg) {
