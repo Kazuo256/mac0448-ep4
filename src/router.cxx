@@ -67,7 +67,7 @@ void Router::make_group (unsigned group_id, bool shared) {
   } else {
     root = id_;
   }
-  msg << root;
+  msg << root << " " << id();
   broadcast(msg.str());
 }
 
@@ -279,7 +279,18 @@ void Router::handle_unicast (unsigned id_sender, stringstream& args) {
 }
 
 void Router::add_group (unsigned id_sender, stringstream& args) {
-
+  unsigned group_id, root, transmitter;
+  args >> group_id;
+  args >> root;
+  args >> transmitter;
+  if (!add_new_group(group_id, root)) {
+    cut_broadcast(true);
+  }
+  if (root == id()) {
+    CrazyStruct crazy;
+    crazy.transmitter = transmitter;    
+    multicasts_.insert(make_pair(group_id, crazy));
+  }
 }
 
 //== Métodos para calcular rotas ==//
