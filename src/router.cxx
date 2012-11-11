@@ -38,6 +38,7 @@ const static pair<string, MsgHandler> handler_list[] = {
   make_pair("ROUTE_MS", &Router::route_ms),
   make_pair("ROUTE_HOP", &Router::route_hop),
   make_pair("ADD_GROUP", &Router::add_group),
+  make_pair("ROUTE", &Router::route),
 };
 
 const static pair<string, MsgHandler> *const handler_end =
@@ -85,6 +86,32 @@ void Router::linkstate_begin () {
 
 void Router::distvector_begin () {
   send_distvector();
+}
+
+void Router::make_sptree () {
+  ls_route_ms_.resize(linkstates_.size(), INFINITO_UNSIGNED);
+  ls_cost_ms_.resize(linkstates_.size(), INFINITO_DOUBLE);
+  std::priority_queue<unsigned, vector<unsigned>, std::tr1::function<bool (unsigned, unsigned)> > 
+      PQ(bind(&Router::comp_ms, this, _1, _2));
+  ls_cost_ms_[id_] = 0.0;
+  ls_route_ms_[id_] = id_;
+  PQ.push(id_);
+  while (!PQ.empty()) {
+    unsigned n = PQ.top();
+    PQ.pop();
+    LinkState& link_n = linkstates_[n];
+    for (std::list<Router::Neighbor>::iterator it = link_n.begin(); it != link_n.end(); ++it) {
+      double cost = delay(n, it->id);
+      if (ls_cost_ms_[it->id] == INFINITO_DOUBLE) {
+        ls_cost_ms_[it->id] = ls_cost_ms_[n] + cost;
+        ls_route_ms_[it->id] = n;
+        PQ.push(it->id);
+      } else if (ls_cost_ms_[it->id] > ls_cost_ms_[n] + cost) {
+        ls_cost_ms_[it->id] = ls_cost_ms_[n] + cost;
+        ls_route_ms_[it->id] = n;
+      }
+    }
+  }
 }
 
 // Métodos que tratam mensagens
@@ -267,7 +294,44 @@ void Router::route_hop (unsigned id_sender, stringstream& args) {
   dv_handle_route(args, mem_fn(&Dist::get_hops), "HOP");
 }
 
+void Router::route (unsigned id_sender, stringstream& args) {
+  string token;
+  args >> token;
+  string msg;
+  getline(args, msg);
+  if (token == "|")
+    receive_msg(id_sender, msg);
+  else {
+    unsigned  next;
+    stringstream(token) >> next;
+    network_->send(id(), next, msg);
+  }
+}
+
 //== Métodos para calcular rotas ==//
+
+void Router::broadcast (const string& msg) {
+  network_->local_broadcast(id(), msg);
+}
+
+void Router::route_msg (unsigned id_target, const string& msg) {
+  stringstream routing_msg;
+  unsigned router = id_target;
+  std::stack<unsigned> stack;
+  stack.push(id_target);
+  while (ls_route_ms_[router] != router) {
+    stack.push(ls_route_ms_[router]);
+    router = ls_route_ms_[router];
+  }
+  while (!stack.empty()) {
+    routing_msg << sep << stack.top();
+    stack.pop();
+  }
+  routing_msg << sep << "|" << sep << msg;
+  stringstream args;
+  args << routing_msg;
+  route(id(), args);
+}
 
 bool Router::comp_ms (unsigned id_1, unsigned id_2) const {
   return ls_cost_ms_[id_1] > ls_cost_ms_[id_2];

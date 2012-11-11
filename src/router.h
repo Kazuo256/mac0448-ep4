@@ -28,6 +28,7 @@ class Router {
     void start_up ();
     void linkstate_begin ();
     void distvector_begin ();
+    void make_sptree ();
     //== Métodos que tratam mensagens ==//
     void acknowledge_hello (unsigned id_sender, std::stringstream& args);
     void acknowledge_neighbor (unsigned id_sender, std::stringstream& args);
@@ -37,8 +38,11 @@ class Router {
     void route_ms (unsigned id_sender, std::stringstream& args);
     void route_hop (unsigned id_sender, std::stringstream& args);
     void add_group (unsigned id_sender, std::stringstream& args);
+    void route (unsigned id_sender, std::stringstream& args);
     //== Métodos para calcular rotas ==//
     // Usados para estado de enlace:
+    void broadcast (const std::string& msg);
+    void route_msg (unsigned id_target, const std::string& msg);
     double linkstate_route_ms (unsigned id_target, std::vector<unsigned>& route);
     double linkstate_route_hop (unsigned id_target, std::vector<unsigned>& route);
     double delay (unsigned origin, unsigned destiny);

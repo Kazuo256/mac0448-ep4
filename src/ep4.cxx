@@ -32,7 +32,8 @@ typedef void (Router::*Bootstrap) ();
 const static Bootstrap bootstrap_list[] = {
   &Router::start_up,
   &Router::linkstate_begin,
-  &Router::distvector_begin
+  &Router::distvector_begin,
+  &Router::make_sptree
 };
 
 // Variável auxiliar que aponta para o final da lista acima.
@@ -57,6 +58,13 @@ static void simulation_step (const Bootstrap& bootstrap_method);
 // prompt deve continuar ou não. Se for falso, o prompt deve terminar.
 static bool handle_command (stringstream& command);
 
+static void create_network (const std::string& topology_file) {
+  size_t router_num = network.load_topology(topology_file);
+  cout << "## Number of routers in the network: " << router_num << endl;
+  for (unsigned i = 0; i < router_num; ++i)
+    routers.push_back(Router(&network, i, routerlogic));
+}
+
 void init_simulation (const std::string& topology_file, 
                       const std::string& multicast_type ) {
   if (multicast_type == "SOURCE" || multicast_type == "source") {
@@ -65,13 +73,6 @@ void init_simulation (const std::string& topology_file,
     routerlogic = NULL;
   }
   create_network(topology_file);
-}
-
-void create_network (const std::string& topology_file) {
-  size_t router_num = network.load_topology(topology_file);
-  cout << "## Number of routers in the network: " << router_num << endl;
-  for (unsigned i = 0; i < router_num; ++i)
-    routers.push_back(Router(&network, i, routerlogic));
 }
 
 void find_routes () {
