@@ -2,14 +2,12 @@
 #ifndef EP3_NETWORK_H_
 #define EP3_NETWORK_H_
 
+#include "transmissionqueue.h"
+
 #include <string>
 #include <vector>
-#include <queue>
 #include <ostream>
 #include <sstream>
-
-#define SOURCE true
-#define SHARED false
 
 namespace ep4 {
 
@@ -18,8 +16,7 @@ class Packet;
 class Network {
   public:
     Network ();
-    size_t load_topology (const std::string& topology_file,
-                          const std::string& multicast_type);
+    size_t load_topology (const std::string& topology_file);
     double get_delay (unsigned id_sender, unsigned id_receiver) const;
     void local_broadcast (unsigned id_sender, const std::string& msg);
     void send (unsigned id_sender, unsigned id_receiver,
@@ -29,8 +26,7 @@ class Network {
   private:
     typedef std::vector< std::vector<double> > Topology;
     Topology            topology_;
-    std::queue<Packet>  packets_;
-    bool                multicast_type_;
+    TransmissionQueue   packets_;
 };
 
 } // namespace ep4

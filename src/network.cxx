@@ -57,17 +57,16 @@ void Network::local_broadcast (unsigned id_sender, const string& msg) {
 
 void Network::send (unsigned id_sender, unsigned id_receiver,
                     const string& msg) {
-  if (topology_[id_sender][id_receiver] < 0.0)
+  double delay = topology_[id_sender][id_receiver];
+  if (delay < 0.0)
     return;
   Packet packet = { id_sender, id_receiver, msg };
   cout << packet << endl;
-  packets_.push(packet); 
+  packets_.insert(packet, delay); 
 }
 
 Packet Network::next_msg () {
-  Packet packet = packets_.front();
-  packets_.pop();
-  return packet;
+  return packets_.next();
 }
 
 } // namespce ep4
