@@ -295,6 +295,10 @@ void Router::add_group (unsigned id_sender, stringstream& args) {
   }
 }
 
+void Router::handle_join (unsigned id_sender, stringstream& args) {
+  cout << "JOOINNNNN PLZ DONT ERASE MEEEE";
+}
+
 //== Métodos para calcular rotas ==//
 
 void Router::broadcast (const string& msg) {
