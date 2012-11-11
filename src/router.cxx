@@ -1,5 +1,6 @@
 
 #include "router.h"
+#include "routerlogic.h"
 #include "network.h"
 
 #include <utility>
@@ -56,6 +57,8 @@ void Router::receive_msg (unsigned id_sender, const string& msg) {
   unordered_map<string, MsgHandler>::const_iterator it = handlers.find(header);
   if (it != handlers.end())
     (this->*(it->second))(id_sender, tokens);
+  else
+    logic_->handle_msg(id(), id_sender, header, tokens);
 }
 
 // Métodos de bootstrap
@@ -81,6 +84,20 @@ void Router::linkstate_begin () {
 
 void Router::distvector_begin () {
   send_distvector();
+}
+
+//=== Métodos de grupos multicast ===//
+
+void Router::make_group (unsigned group_id) {
+  logic_->make_group(id(), group_id);
+}
+
+void Router::join_group (unsigned group_id) {
+  logic_->join_group(id(), group_id);
+}
+
+void Router::leave_group (unsigned group_id) {
+  logic_->leave_group(id(), group_id);
 }
 
 // Métodos que tratam mensagens
