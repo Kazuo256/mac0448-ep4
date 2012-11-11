@@ -35,7 +35,8 @@ const static pair<string, MsgHandler> handler_list[] = {
   make_pair("REQ_LINKSTATE", &Router::respond_linkstate),
   make_pair("ANSWER_LINKSTATE", &Router::receive_linkstate),
   make_pair("ADD_GROUP", &Router::add_group),
-  make_pair("ROUTE", &Router::route),
+  make_pair("BROADCAST", &Router::handle_broadcast),
+  make_pair("UNICAST", &Router::handle_unicast),
 };
 
 const static pair<string, MsgHandler> *const handler_end =
@@ -234,7 +235,18 @@ void Router::receive_linkstate (unsigned id_sender, stringstream& args) {
   }
 }
 
-void Router::route (unsigned id_sender, stringstream& args) {
+void Router::handle_broadcast (unsigned id_sender, stringstream& args) {
+  string msg;
+  getline(args, msg);
+  receive_msg(id_sender, msg);
+  if (cut_broadcast()) return;
+  for (unordered_map<unsigned,double>::iterator it = neighbors_.begin();
+       it != neighbors_.end(); ++it)
+    if (it->first != id_sender)
+      network_->send(id(), it->first, args.str());
+}
+
+void Router::handle_unicast (unsigned id_sender, stringstream& args) {
   string token;
   args >> token;
   string msg;
@@ -244,7 +256,7 @@ void Router::route (unsigned id_sender, stringstream& args) {
   else {
     unsigned  next;
     stringstream(token) >> next;
-    network_->send(id(), next, msg);
+    network_->send(id(), next, "UNICAST"+sep+msg);
   }
 }
 
@@ -258,7 +270,7 @@ void Router::broadcast (const string& msg) {
   network_->local_broadcast(id(), msg);
 }
 
-void Router::route_msg (unsigned id_target, const string& msg) {
+void Router::unicast (unsigned id_target, const string& msg) {
   stringstream routing_msg;
   unsigned router = id_target;
   std::stack<unsigned> stack;
@@ -274,7 +286,7 @@ void Router::route_msg (unsigned id_target, const string& msg) {
   routing_msg << sep << "|" << sep << msg;
   stringstream args;
   args << routing_msg;
-  route(id(), args);
+  handle_unicast(id(), args);
 }
 
 bool Router::comp_ms (unsigned id_1, unsigned id_2) const {

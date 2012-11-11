@@ -33,12 +33,13 @@ class Router {
     void acknowledge_neighbor (unsigned id_sender, std::stringstream& args);
     void respond_linkstate (unsigned id_sender, std::stringstream& args);
     void receive_linkstate (unsigned id_sender, std::stringstream& args);
-    void route (unsigned id_sender, std::stringstream& args);
+    void handle_unicast (unsigned id_sender, std::stringstream& args);
+    void handle_broadcast (unsigned id_sender, std::stringstream& args);
     void add_group (unsigned id_sender, std::stringstream& args);
     //== Métodos para calcular rotas ==//
     // Usados para estado de enlace:
     void broadcast (const std::string& msg);
-    void route_msg (unsigned id_target, const std::string& msg);
+    void unicast (unsigned id_target, const std::string& msg);
     double linkstate_route_ms (unsigned id_target, std::vector<unsigned>& route);
     double linkstate_route_hop (unsigned id_target, std::vector<unsigned>& route);
     double delay (unsigned origin, unsigned destiny);
@@ -53,6 +54,7 @@ class Router {
     RouterLogic*                                  logic_;
     unsigned                                      id_;
     std::tr1::unordered_map<unsigned, double>     neighbors_;
+    bool                                          cut_broadcast_;
     //== Informações de estado de enlace ==//
     struct Neighbor {
       unsigned  id;
@@ -70,6 +72,11 @@ class Router {
     // Método para formatar a saída do roteador.
     std::ostream& output () const {
       return std::cout << "[ROUTER " << id_ << "] ";
+    }
+    bool cut_broadcast (bool cut = false) {
+      bool before = cut_broadcast_;
+      cut_broadcast_ = cut;
+      return before;
     }
     std::tr1::unordered_map<unsigned, unsigned> groups_;
 };
