@@ -296,7 +296,20 @@ void Router::add_group (unsigned id_sender, stringstream& args) {
 }
 
 void Router::handle_join (unsigned id_sender, stringstream& args) {
-  cout << "JOOINNNNN PLZ DONT ERASE MEEEE";
+  unsigned group_id, joiner_id;
+  args >> group_id;
+  args >> joiner_id;
+  unordered_map<unsigned, CrazyStruct>::iterator it = multicasts_.find(group_id);
+  if (it == multicasts_.end()) 
+    cout << "AERROOOOOOOOOOOOOOOOOOOOOOOOOOOO!" << endl;
+  else {
+    CrazyGuys aux = it->second.crazy_guys;
+    std::tr1::unordered_map<unsigned, unsigned>::iterator crazy_it = aux.find(joiner_id);
+    if (crazy_it == aux.end())
+      aux.insert(make_pair(joiner_id, 1));
+    else
+      aux[joiner_id]++;
+  }
 }
 
 //== Métodos para calcular rotas ==//
