@@ -4,6 +4,7 @@
 #include "network.h"
 #include "packet.h"
 #include "routerlogic.h"
+#include "sharedlogic.h"
 
 #include <vector>
 #include <string>
