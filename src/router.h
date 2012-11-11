@@ -70,6 +70,7 @@ class Router {
     std::ostream& output () const {
       return std::cout << "[ROUTER " << id_ << "] ";
     }
+    unsigned biggest_delta ();
     bool cut_broadcast (bool cut = false) {
       bool before = cut_broadcast_;
       cut_broadcast_ = cut;
