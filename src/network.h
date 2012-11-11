@@ -2,6 +2,8 @@
 #ifndef EP3_NETWORK_H_
 #define EP3_NETWORK_H_
 
+#include "transmissionqueue.h"
+
 #include <string>
 #include <vector>
 #include <queue>
@@ -25,7 +27,8 @@ class Network {
   private:
     typedef std::vector< std::vector<double> > Topology;
     Topology            topology_;
-    std::queue<Packet>  packets_;
+    TransmissionQueue   packets_;
+    //std::queue<Packet>  packets_;
 };
 
 } // namespace ep4
