@@ -69,7 +69,8 @@ void Router::make_group (unsigned group_id, bool shared) {
     root = biggest_delta();
   else
     root = id();
-  msg << sep << root << " " << id();
+  add_new_group(group_id, root);
+  msg << sep << root << sep << id();
   broadcast(msg.str());
 }
 
@@ -285,9 +286,8 @@ void Router::add_group (unsigned id_sender, stringstream& args) {
   args >> group_id;
   args >> root;
   args >> transmitter;
-  if (!add_new_group(group_id, root)) {
+  if (!add_new_group(group_id, root))
     cut_broadcast(true);
-  }
   if (root == id()) {
     CrazyStruct crazy;
     crazy.transmitter = transmitter;    
@@ -302,7 +302,7 @@ void Router::handle_join (unsigned id_sender, stringstream& args) {
 //== Métodos para calcular rotas ==//
 
 void Router::broadcast (const string& msg) {
-  network_->local_broadcast(id(), msg);
+  network_->local_broadcast(id(), "BROADCAST"+sep+msg);
 }
 
 void Router::unicast (unsigned id_target, const string& msg) {
@@ -355,6 +355,8 @@ bool Router::add_new_group (unsigned group_id, unsigned source_id) {
   unordered_map<unsigned, unsigned>::iterator has = group_sources_.find(group_id);
   if (has == group_sources_.end()) {
     group_sources_.insert(make_pair(group_id, source_id));
+    output()  << "Acknowledges multicast group with ID " << group_id
+              << "." << endl;
     return true;
   }
   return false;

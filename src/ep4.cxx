@@ -76,6 +76,7 @@ void init_simulation (const std::string& topology_file,
 void find_routes () {
   cout << "## Simulating routers' startup message exchange" << endl;
   for_each(bootstraps.begin(), bootstraps.end(), simulation_step);
+  //for_each(routers.begin(), routers.end(), mem_fn(&Router::dump_linkstate_table));
 }
 
 void run_prompt (const string& progname) {
@@ -139,8 +140,8 @@ static bool handle_command (stringstream& command) {
     if (!check_args(command)) return true;
     command >> source_id;
     if (!check_id(source_id)) return true;
+    cout << "## Creating multicast group with ID " << group_id << "." << endl;
     routers[source_id].make_group(group_id, shared);
-    cout << "## Multicast group with ID " << group_id << " created." << endl;
   }
   else if (cmd_name == "join") {
     unsigned receiver_id, group_id;
@@ -170,6 +171,7 @@ static bool handle_command (stringstream& command) {
     cout << "## Unknown command '" << cmd_name << "'." << endl;
     return true;
   }
+  simulate_network();
   return true;
 }
 
