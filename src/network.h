@@ -6,7 +6,6 @@
 
 #include <string>
 #include <vector>
-#include <queue>
 #include <ostream>
 #include <sstream>
 
@@ -28,7 +27,6 @@ class Network {
     typedef std::vector< std::vector<double> > Topology;
     Topology            topology_;
     TransmissionQueue   packets_;
-    //std::queue<Packet>  packets_;
 };
 
 } // namespace ep4
