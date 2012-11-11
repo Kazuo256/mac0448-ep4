@@ -28,6 +28,7 @@ class Router {
     void start_up ();
     void linkstate_begin ();
     void distvector_begin ();
+    void make_sptree ();
     //== Métodos que tratam mensagens ==//
     void acknowledge_hello (unsigned id_sender, std::stringstream& args);
     void acknowledge_neighbor (unsigned id_sender, std::stringstream& args);

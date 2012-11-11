@@ -6,11 +6,10 @@
 
 namespace ep4 {
 
+/// Cria a rede e sua topologia a partir do arquivo passado e determina o
+/// tipo de grupo multicast usado.
 void init_simulation (const std::string& topology_file, 
                       const std::string& multicast_type );
-
-/// Cria a rede e sua topologia a partir do arquivo passado.
-void create_network (const std::string& topology_file);
 
 /// Os roteadores trocam mensagens até montarem suas tabelas de roteamento.
 void find_routes ();
