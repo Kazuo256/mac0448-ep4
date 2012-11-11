@@ -168,34 +168,54 @@ static void distvector_route (unsigned id_origin, unsigned id_destiny,
   cout << ")" << endl;
 }
 
+static unsigned next = 0;
+
+static unsigned next_id () {
+  return next++;
+}
+
 static bool handle_command (stringstream& command) {
-  typedef void (*RouteFunc) (unsigned, unsigned, const string&);
   // Um monte de código feio...
   // Começa verificando a primeira palavra do comando
   string cmd_name;
   command >> cmd_name;
   if (cmd_name == "quit") return false; // Interrompe o prompt
-  RouteFunc func = NULL;
-  if (cmd_name == "ee") func = linkstate_route;
-  else if (cmd_name == "vd") func = distvector_route;
+  if (cmd_name == "send") {
+    unsigned source_id, group_id = next_id();
+    if (!check_args(command)) return true;
+    command >> source_id;
+    if (!check_id(source_id)) return true;
+    //routers[source_id].make_group(group_id);
+    cout << "## Multicast group with ID " << group_id << " created." << endl;
+  }
+  else if (cmd_name == "join") {
+    unsigned receiver_id, group_id;
+    if (!check_args(command)) return true;
+    command >> receiver_id;
+    if (!check_id(receiver_id)) return true;
+    if (!check_args(command)) return true;
+    command >> group_id;
+    if (group_id >= next) {
+      cout << "## No multicast group with ID " << group_id << "." << endl;
+    }
+    //routers[receiver_id].join_group(group_id);
+  }
+  else if (cmd_name == "leave") {
+    unsigned receiver_id, group_id;
+    if (!check_args(command)) return true;
+    command >> receiver_id;
+    if (!check_id(receiver_id)) return true;
+    if (!check_args(command)) return true;
+    command >> group_id;
+    if (group_id >= next) {
+      cout << "## No multicast group with ID " << group_id << "." << endl;
+    }
+    //routers[receiver_id].leave_group(group_id);
+  }
   else {
     cout << "## Unknown command '" << cmd_name << "'." << endl;
     return true;
   }
-  // Primeiro vem os IDs de origem e destino
-  unsigned id_origin, id_destiny;
-  if (!check_args(command)) return true;
-  command >> id_origin;
-  if (!check_id(id_origin)) return true;
-  if (!check_args(command)) return true;
-  command >> id_destiny;
-  if (!check_id(id_destiny)) return true;
-  // Depois a métrica desejada
-  string metric;
-  if (!check_args(command)) return true;
-  command >> metric;
-  // Enfim fazemos o roteador calcular a rota
-  func(id_origin, id_destiny, metric);
   return true;
 }
 
