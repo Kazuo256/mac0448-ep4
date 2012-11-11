@@ -127,32 +127,6 @@ static bool check_args (const stringstream& command) {
   return true;
 }
 
-
-static void linkstate_route (unsigned id_origin, unsigned id_destiny,
-                             const string& metric) {
-  typedef double (Router::*RoutingMethod) (unsigned, vector<unsigned>&);
-  // Detecta qual algoritmo de roteamento solicitado
-  RoutingMethod method = NULL;
-  if (metric == "a") method = &Router::linkstate_route_ms;
-  else if (metric == "h") method = &Router::linkstate_route_hop;
-  else {
-    cout << "## Unknown metric '" << metric << "'." << endl;
-    return;
-  }
-  cout << "## Finding route..." << endl;
-  vector<unsigned> route;
-  double total_delay = (routers[id_origin].*method) (id_destiny, route);
-  // E exibimos a rota para o usuário
-  for (vector<unsigned>::iterator it = route.begin(); it != route.end(); ++it)
-    cout << *it << " ";
-  cout << "(";
-  if (metric == "h")
-    cout << route.size() << " hops";
-  else if (metric == "a")
-    cout << total_delay << " milisegundos";
-  cout << ")" << endl;
-}
-
 static unsigned next = 0;
 
 static unsigned next_id () {
