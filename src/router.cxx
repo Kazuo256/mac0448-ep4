@@ -1,6 +1,5 @@
 
 #include "router.h"
-#include "routerlogic.h"
 #include "network.h"
 
 #include <utility>
@@ -319,48 +318,6 @@ double Router::delay (unsigned origin, unsigned destiny) {
       return it->delay;
     }
   return 0.0;
-}
-
-double Router::linkstate_route_ms (unsigned id_target, vector<unsigned>& route) {
-  if (ls_route_ms_.empty() && ls_cost_ms_.empty()) {
-    ls_route_ms_.resize(linkstates_.size(), INFINITO_UNSIGNED);
-    ls_cost_ms_.resize(linkstates_.size(), INFINITO_DOUBLE);
-  }
-  if (ls_route_ms_[id_target] == INFINITO_UNSIGNED) {
-    std::priority_queue<unsigned, vector<unsigned>, std::tr1::function<bool (unsigned, unsigned)> > 
-        PQ(bind(&Router::comp_ms, this, _1, _2));
-    ls_cost_ms_[id_] = 0.0;
-    ls_route_ms_[id_] = id_;
-    PQ.push(id_);
-    while (!PQ.empty()) {
-      unsigned n = PQ.top();
-      PQ.pop();
-      LinkState& link_n = linkstates_[n];
-      for (std::list<Router::Neighbor>::iterator it = link_n.begin(); it != link_n.end(); ++it) {
-        double cost = delay(n, it->id);
-        if (ls_cost_ms_[it->id] == INFINITO_DOUBLE) {
-          ls_cost_ms_[it->id] = ls_cost_ms_[n] + cost;
-          ls_route_ms_[it->id] = n;
-          PQ.push(it->id);
-        } else if (ls_cost_ms_[it->id] > ls_cost_ms_[n] + cost) {
-          ls_cost_ms_[it->id] = ls_cost_ms_[n] + cost;
-          ls_route_ms_[it->id] = n;
-        }
-      }
-    }
-  }
-  unsigned router = id_target;
-  std::stack<unsigned> stack;
-  stack.push(id_target);
-  while (ls_route_ms_[router] != router) {
-    stack.push(ls_route_ms_[router]);
-    router = ls_route_ms_[router];
-  }
-  while (!stack.empty()) {
-    route.push_back(stack.top());
-    stack.pop();
-  }
-  return ls_cost_ms_[id_target];
 }
 
 // Informações de debug
