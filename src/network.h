@@ -8,6 +8,9 @@
 #include <ostream>
 #include <sstream>
 
+#define SOURCE true
+#define SHARED false
+
 namespace ep4 {
 
 class Packet;
@@ -15,7 +18,8 @@ class Packet;
 class Network {
   public:
     Network ();
-    size_t load_topology (const std::string& topology_file);
+    size_t load_topology (const std::string& topology_file,
+                          const std::string& multicast_type);
     double get_delay (unsigned id_sender, unsigned id_receiver) const;
     void local_broadcast (unsigned id_sender, const std::string& msg);
     void send (unsigned id_sender, unsigned id_receiver,
@@ -26,6 +30,7 @@ class Network {
     typedef std::vector< std::vector<double> > Topology;
     Topology            topology_;
     std::queue<Packet>  packets_;
+    bool                multicast_type_;
 };
 
 } // namespace ep4

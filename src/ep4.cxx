@@ -53,6 +53,11 @@ static void simulation_step (const Bootstrap& bootstrap_method);
 // prompt deve continuar ou não. Se for falso, o prompt deve terminar.
 static bool handle_command (stringstream& command);
 
+void init_simulation (const std::string& topology_file, 
+                      const std::string& multicast_type ) {
+  
+}
+
 void create_network (const std::string& topology_file) {
   size_t router_num = network.load_topology(topology_file);
   cout << "## Number of routers in the network: " << router_num << endl;

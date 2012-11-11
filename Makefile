@@ -8,7 +8,7 @@ default_target: all
 #=============================================================================
 # Special targets provided by cmake.
 
-# Disable implicit rules so canoncical targets will work.
+# Disable implicit rules so canonical targets will work.
 .SUFFIXES:
 
 # Remove some rules from gmake that .SUFFIXES does not remove.
@@ -36,10 +36,10 @@ CMAKE_COMMAND = /usr/bin/cmake
 RM = /usr/bin/cmake -E remove -f
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/kazuo/Workspaces/usp/2012.2/MAC0448/ep4
+CMAKE_SOURCE_DIR = /home/thiago/repositorios/mac0448-ep4
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/kazuo/Workspaces/usp/2012.2/MAC0448/ep4
+CMAKE_BINARY_DIR = /home/thiago/repositorios/mac0448-ep4
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -66,9 +66,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/kazuo/Workspaces/usp/2012.2/MAC0448/ep4/CMakeFiles /home/kazuo/Workspaces/usp/2012.2/MAC0448/ep4/CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/thiago/repositorios/mac0448-ep4/CMakeFiles /home/thiago/repositorios/mac0448-ep4/CMakeFiles/progress.marks
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/kazuo/Workspaces/usp/2012.2/MAC0448/ep4/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/thiago/repositorios/mac0448-ep4/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -180,6 +180,30 @@ src/network.cxx.s:
 	$(MAKE) -f CMakeFiles/ep4.dir/build.make CMakeFiles/ep4.dir/src/network.cxx.s
 .PHONY : src/network.cxx.s
 
+src/packet.o: src/packet.cxx.o
+.PHONY : src/packet.o
+
+# target to build an object file
+src/packet.cxx.o:
+	$(MAKE) -f CMakeFiles/ep4.dir/build.make CMakeFiles/ep4.dir/src/packet.cxx.o
+.PHONY : src/packet.cxx.o
+
+src/packet.i: src/packet.cxx.i
+.PHONY : src/packet.i
+
+# target to preprocess a source file
+src/packet.cxx.i:
+	$(MAKE) -f CMakeFiles/ep4.dir/build.make CMakeFiles/ep4.dir/src/packet.cxx.i
+.PHONY : src/packet.cxx.i
+
+src/packet.s: src/packet.cxx.s
+.PHONY : src/packet.s
+
+# target to generate assembly for a file
+src/packet.cxx.s:
+	$(MAKE) -f CMakeFiles/ep4.dir/build.make CMakeFiles/ep4.dir/src/packet.cxx.s
+.PHONY : src/packet.cxx.s
+
 src/router.o: src/router.cxx.o
 .PHONY : src/router.o
 
@@ -204,6 +228,30 @@ src/router.cxx.s:
 	$(MAKE) -f CMakeFiles/ep4.dir/build.make CMakeFiles/ep4.dir/src/router.cxx.s
 .PHONY : src/router.cxx.s
 
+src/transmissionqueue.o: src/transmissionqueue.cxx.o
+.PHONY : src/transmissionqueue.o
+
+# target to build an object file
+src/transmissionqueue.cxx.o:
+	$(MAKE) -f CMakeFiles/ep4.dir/build.make CMakeFiles/ep4.dir/src/transmissionqueue.cxx.o
+.PHONY : src/transmissionqueue.cxx.o
+
+src/transmissionqueue.i: src/transmissionqueue.cxx.i
+.PHONY : src/transmissionqueue.i
+
+# target to preprocess a source file
+src/transmissionqueue.cxx.i:
+	$(MAKE) -f CMakeFiles/ep4.dir/build.make CMakeFiles/ep4.dir/src/transmissionqueue.cxx.i
+.PHONY : src/transmissionqueue.cxx.i
+
+src/transmissionqueue.s: src/transmissionqueue.cxx.s
+.PHONY : src/transmissionqueue.s
+
+# target to generate assembly for a file
+src/transmissionqueue.cxx.s:
+	$(MAKE) -f CMakeFiles/ep4.dir/build.make CMakeFiles/ep4.dir/src/transmissionqueue.cxx.s
+.PHONY : src/transmissionqueue.cxx.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -222,9 +270,15 @@ help:
 	@echo "... src/network.o"
 	@echo "... src/network.i"
 	@echo "... src/network.s"
+	@echo "... src/packet.o"
+	@echo "... src/packet.i"
+	@echo "... src/packet.s"
 	@echo "... src/router.o"
 	@echo "... src/router.i"
 	@echo "... src/router.s"
+	@echo "... src/transmissionqueue.o"
+	@echo "... src/transmissionqueue.i"
+	@echo "... src/transmissionqueue.s"
 .PHONY : help
 
 

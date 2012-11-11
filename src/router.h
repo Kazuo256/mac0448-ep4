@@ -18,8 +18,8 @@ class Network;
 
 class Router {
   public:
-    Router (Network* network, unsigned id) :
-      network_(network), id_(id), lastcost_(0.0) {}
+    Router (Network* network, unsigned id, RouterLogic* routerlogic) :
+      network_(network), id_(id), lastcost_(0.0), routerlogic_(routerlogic) {}
     //== Métodos básicos ==//
     unsigned id () const { return id_; }
     void receive_msg (unsigned id_sender, const std::string& msg);
@@ -50,6 +50,7 @@ class Router {
     void dump_linkstate_table () const;
   private:
     Network*                                      network_;
+    RouterLogic*                                  routerlogic_;
     unsigned                                      id_;
     std::tr1::unordered_map<unsigned, double>     neighbors_;
     //== Informações de estado de enlace ==//

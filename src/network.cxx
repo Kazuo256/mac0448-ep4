@@ -22,7 +22,8 @@ namespace ep4 {
 
 Network::Network () {}
 
-size_t Network::load_topology (const string& topology_file) {
+size_t Network::load_topology (const string& topology_file, 
+                               const string& multicast_type) {
   size_t   node_num = 0, count = 0;
   ifstream file(topology_file.c_str(), ifstream::in);
 
