@@ -34,6 +34,7 @@ const static pair<string, MsgHandler> handler_list[] = {
   make_pair("REQ_LINKSTATE", &Router::respond_linkstate),
   make_pair("ANSWER_LINKSTATE", &Router::receive_linkstate),
   make_pair("ADD_GROUP", &Router::add_group),
+  make_pair("JOIN", &Router::handle_join),
   make_pair("BROADCAST", &Router::handle_broadcast),
   make_pair("UNICAST", &Router::handle_unicast),
 };
@@ -64,17 +65,18 @@ void Router::make_group (unsigned group_id, bool shared) {
   stringstream msg;
   msg << "ADD_GROUP" << sep << group_id;
   unsigned root;
-  if (shared) {
+  if (shared)
     root = biggest_delta();
-  } else {
-    root = id_;
-  }
+  else
+    root = id();
   msg << sep << root;
   broadcast(msg.str());
 }
 
 void Router::join_group (unsigned group_id) {
-
+  stringstream msg;
+  msg << "JOIN" << sep << group_id << sep << id();
+  unicast(group_sources_[group_id], msg.str());
 }
 
 void Router::leave_group (unsigned group_id) {
@@ -280,6 +282,10 @@ void Router::handle_unicast (unsigned id_sender, stringstream& args) {
 
 void Router::add_group (unsigned id_sender, stringstream& args) {
 
+}
+
+void Router::handle_join (unsigned id_sender, stringstream& args) {
+  cout << "JOOOOOOIN";
 }
 
 //== Métodos para calcular rotas ==//

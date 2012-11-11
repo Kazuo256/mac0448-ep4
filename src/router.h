@@ -39,6 +39,7 @@ class Router {
     void handle_unicast (unsigned id_sender, std::stringstream& args);
     void handle_broadcast (unsigned id_sender, std::stringstream& args);
     void add_group (unsigned id_sender, std::stringstream& args);
+    void handle_join (unsigned id_sender, std::stringstream& args);
     //== Métodos para calcular rotas ==//
     // Usados para estado de enlace:
     void broadcast (const std::string& msg);
