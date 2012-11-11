@@ -11,6 +11,10 @@ set (
   src/ep4.h
   src/network.cxx
   src/network.h
+  src/packet.cxx
+  src/packet.h
+  src/transmissionqueue.cxx
+  src/transmissionqueue.h
   src/router.cxx
   src/router.h
 )

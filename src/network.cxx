@@ -1,5 +1,6 @@
 
 #include "network.h"
+#include "packet.h"
 
 #include <algorithm>
 #include <iostream>
@@ -18,6 +19,8 @@ using std::cout;
 using std::endl;
 
 namespace ep4 {
+
+Network::Network () {}
 
 size_t Network::load_topology (const string& topology_file) {
   size_t   node_num = 0, count = 0;
@@ -60,22 +63,10 @@ void Network::send (unsigned id_sender, unsigned id_receiver,
   packets_.push(packet); 
 }
 
-Network::Packet Network::next_msg () {
+Packet Network::next_msg () {
   Packet packet = packets_.front();
   packets_.pop();
   return packet;
-}
-
-Network::Packet::operator string () const {
-  stringstream stream;
-  stream << "[PACKET sender=" << id_sender << " receiver=" << id_receiver
-         << " msg=\"" << msg << "\"]";
-  return stream.str();
-}
-
-ostream& operator << (ostream& os, const Network::Packet& packet) {
-  os << static_cast<string>(packet);
-  return os;
 }
 
 } // namespce ep4

@@ -2,6 +2,7 @@
 #include "ep4.h"
 #include "router.h"
 #include "network.h"
+#include "packet.h"
 
 #include <vector>
 #include <string>
@@ -80,7 +81,7 @@ void run_prompt (const string& progname) {
 
 static void simulate_network () {
   while (network.pending_msgs()) {
-    Network::Packet packet = network.next_msg();
+    Packet packet = network.next_msg();
     routers[packet.id_receiver].receive_msg(packet.id_sender, packet.msg);
   }
 }
