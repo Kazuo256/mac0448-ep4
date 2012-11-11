@@ -20,6 +20,8 @@ set (
   src/routerlogic.h
   src/sharedlogic.h
   src/sharedlogic.cxx
+  src/sourcelogic.h
+  src/sourcelogic.cxx
 )
 
 add_executable (ep4 ${EP4_SRC})
