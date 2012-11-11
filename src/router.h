@@ -47,8 +47,6 @@ class Router {
     bool comp_ms (unsigned id_1, unsigned id_2) const;
     //== Informações de debug ==//
     void dump_linkstate_table () const;
-    // Usados para o multicast
-    bool add_new_group (unsigned group_id, unsigned router_id);
   private:
     Network*                                      network_;
     unsigned                                      id_;
@@ -64,6 +62,10 @@ class Router {
     std::tr1::unordered_set<unsigned>             pending_linkstates_;
     std::vector<unsigned>                         ls_route_ms_;
     std::vector<double>                           ls_cost_ms_;
+    //== Informações dos grupos multicast ==//
+    std::tr1::unordered_map<unsigned, unsigned> group_sources_;
+    // Adiciona informação sobre a fonte do grupo multicast.
+    bool add_new_group (unsigned group_id, unsigned router_id);
     //== Outros ==//
     // Método para formatar a saída do roteador.
     std::ostream& output () const {
@@ -74,7 +76,6 @@ class Router {
       cut_broadcast_ = cut;
       return before;
     }
-    std::tr1::unordered_map<unsigned, unsigned> groups_;
 };
 
 } // namespace ep4

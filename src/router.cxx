@@ -44,6 +44,8 @@ const static pair<string, MsgHandler> *const handler_end =
 const static unordered_map<string, MsgHandler> handlers(handler_list,
                                                         handler_end);
 
+const static string sep = " ";
+
 #define INFINITO_UNSIGNED numeric_limits<unsigned>::max()
 #define INFINITO_DOUBLE numeric_limits<double>::max()
 
@@ -59,7 +61,11 @@ void Router::receive_msg (unsigned id_sender, const string& msg) {
 }
 
 void Router::make_group (unsigned group_id, bool shared) {
-
+  unsigned id_source = shared ? id() : id();
+  add_new_group(group_id, id_source);
+  stringstream msg;
+  msg << "MAKE_GROUP_ROOT" << sep << group_id << sep << id();
+  unicast(id_source, msg.str());
 }
 
 void Router::join_group (unsigned group_id) {
@@ -71,8 +77,6 @@ void Router::leave_group (unsigned group_id) {
 }
 
 // Métodos de bootstrap
-
-const static string sep = " ";
 
 void Router::start_up () {
   linkstates_[id_] = LinkState();
@@ -325,10 +329,10 @@ void Router::dump_linkstate_table () const {
   }
 }
 
-bool Router::add_new_group (unsigned group_id, unsigned router_id) {
-  unordered_map<unsigned, unsigned>::iterator has = groups_.find(group_id);
-  if (has == groups_.end()) {
-    groups_.insert(make_pair(group_id, router_id));
+bool Router::add_new_group (unsigned group_id, unsigned source_id) {
+  unordered_map<unsigned, unsigned>::iterator has = group_sources_.find(group_id);
+  if (has == group_sources_.end()) {
+    group_sources_.insert(make_pair(group_id, source_id));
     return true;
   }
   return false;
