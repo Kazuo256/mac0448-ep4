@@ -42,6 +42,8 @@ const static Bootstrap *const bootstrap_end =
 static vector<Router>     routers;
 // A rede.
 static Network            network;
+// Método usado para 
+static RouterLogic*        routerlogic;
 // Os métodos de bootstrap para os algoritmos de roteamento.
 static vector<Bootstrap>  bootstraps(bootstrap_list,
                                      bootstrap_end);
@@ -56,14 +58,19 @@ static bool handle_command (stringstream& command);
 
 void init_simulation (const std::string& topology_file, 
                       const std::string& multicast_type ) {
-  
+  if (multicast_type == "SOURCE" || multicast_type == "source") {
+    routerlogic = NULL;  
+  } else {
+    routerlogic = NULL;
+  }
+  create_network(topology_file);
 }
 
 void create_network (const std::string& topology_file) {
   size_t router_num = network.load_topology(topology_file);
   cout << "## Number of routers in the network: " << router_num << endl;
   for (unsigned i = 0; i < router_num; ++i)
-    routers.push_back(Router(&network, i, NULL));
+    routers.push_back(Router(&network, i, routerlogic));
 }
 
 void find_routes () {

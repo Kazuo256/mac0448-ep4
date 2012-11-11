@@ -8,12 +8,12 @@ using std::cout;
 
 int main (int argc, char** argv) { 
   // Verifica argumentos
-  if (argc != 2) {
-    cout << "Uso:\n\t" << argv[0] << " <arquivo_de_topologia>\n";
+  if (argc < 3) {
+    cout << "Uso:\n\t" << argv[0] << " <arquivo_de_topologia> <algoritmo>\n";
     return EXIT_FAILURE;
   }
   // Executa lógica do programa
-  ep4::create_network(argv[1]);
+  ep4::init_simulation(argv[1], argv[2]);
   ep4::find_routes();
   ep4::run_prompt(argv[0]);
   // Execução bem sucedida
