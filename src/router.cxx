@@ -37,6 +37,7 @@ const static pair<string, MsgHandler> handler_list[] = {
   make_pair("DISTVECTOR", &Router::receive_distvector),
   make_pair("ROUTE_MS", &Router::route_ms),
   make_pair("ROUTE_HOP", &Router::route_hop),
+  make_pair("ADD_GROUP", &Router::add_group),
 };
 
 const static pair<string, MsgHandler> *const handler_end =
@@ -461,6 +462,15 @@ void Router::send_distvector () {
         << ":" << it->second.delay
         << ":" << it->second.hops;
   network_->local_broadcast(id_, msg.str());
+}
+
+bool Router::add_new_group (unsigned group_id, unsigned router_id) {
+  unordered_map<unsigned, unsigned>::iterator has = groups_.find(group_id);
+  if (has == groups_.end()) {
+    groups_.insert(make_pair(group_id, router_id));
+    return true;
+  }
+  return false;
 }
 
 } // namespace ep4

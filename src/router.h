@@ -36,6 +36,7 @@ class Router {
     void receive_distvector (unsigned id_sender, std::stringstream& args);
     void route_ms (unsigned id_sender, std::stringstream& args);
     void route_hop (unsigned id_sender, std::stringstream& args);
+    void add_group (unsigned id_sender, std::stringstream& args);
     //== Métodos para calcular rotas ==//
     // Usados para estado de enlace:
     double linkstate_route_ms (unsigned id_target, std::vector<unsigned>& route);
@@ -49,6 +50,8 @@ class Router {
     double distvector_extract_route (std::vector<unsigned>& route);
     //== Informações de debug ==//
     void dump_linkstate_table () const;
+    // Usados para o multicast
+    bool add_new_group (unsigned group_id, unsigned router_id);
   private:
     Network*                                      network_;
     RouterLogic*                                  logic_;
@@ -75,9 +78,9 @@ class Router {
     };
     typedef std::tr1::unordered_map<unsigned, Dist>   DistVector;
     typedef std::tr1::function<double (const Dist&)>  Metric;
-    std::tr1::unordered_map<unsigned, DistVector> distvectors_;
-    std::vector<unsigned>                         lastroute_;
-    double                                        lastcost_;
+    std::tr1::unordered_map<unsigned, DistVector>     distvectors_;
+    std::vector<unsigned>                             lastroute_;
+    double                                            lastcost_;
     // Envia o vetor de distâncias para todos os vizinhos
     void send_distvector ();
     // Lida com requisição de roteamento
@@ -94,6 +97,7 @@ class Router {
     std::ostream& output () const {
       return std::cout << "[ROUTER " << id_ << "] ";
     }
+    std::tr1::unordered_map<unsigned, unsigned> groups_;
 };
 
 } // namespace ep4

@@ -5,7 +5,6 @@
 #include "packet.h"
 #include "routerlogic.h"
 #include "sharedlogic.h"
-#include "sourcelogic.h"
 
 #include <vector>
 #include <string>
@@ -45,7 +44,7 @@ static vector<Router>     routers;
 // A rede.
 static Network            network;
 // Método usado para 
-static RouterLogic*        routerlogic = NULL;
+static RouterLogic*        routerlogic;
 // Os métodos de bootstrap para os algoritmos de roteamento.
 static vector<Bootstrap>  bootstraps(bootstrap_list,
                                      bootstrap_end);
@@ -61,13 +60,9 @@ static bool handle_command (stringstream& command);
 void init_simulation (const std::string& topology_file, 
                       const std::string& multicast_type ) {
   if (multicast_type == "SOURCE" || multicast_type == "source") {
-    routerlogic = new SourceLogic;  
-  } else if (multicast_type == "SHARED" || multicast_type == "shared") {
-    routerlogic = new SharedLogic;
-  }
-  else {
-    cout << "## Unknown multicast type. Deafaulting to SOURCE." << endl;
-    routerlogic = new SourceLogic;
+    routerlogic = NULL;  
+  } else {
+    routerlogic = NULL;
   }
   create_network(topology_file);
 }
@@ -96,10 +91,6 @@ void run_prompt (const string& progname) {
     if (!handle_command(command)) return;
   }
   cout << endl;
-}
-
-void clean_up () {
-  delete routerlogic;
 }
 
 static void simulate_network () {
@@ -202,7 +193,7 @@ static bool handle_command (stringstream& command) {
     if (!check_args(command)) return true;
     command >> source_id;
     if (!check_id(source_id)) return true;
-    routerlogic->make_group(routers[source_id], group_id);
+    //routers[source_id].make_group(group_id);
     cout << "## Multicast group with ID " << group_id << " created." << endl;
   }
   else if (cmd_name == "join") {
@@ -215,7 +206,7 @@ static bool handle_command (stringstream& command) {
     if (group_id >= next) {
       cout << "## No multicast group with ID " << group_id << "." << endl;
     }
-    routerlogic->join_group(routers[receiver_id], group_id);
+    //routers[receiver_id].join_group(group_id);
   }
   else if (cmd_name == "leave") {
     unsigned receiver_id, group_id;
@@ -227,13 +218,12 @@ static bool handle_command (stringstream& command) {
     if (group_id >= next) {
       cout << "## No multicast group with ID " << group_id << "." << endl;
     }
-    routerlogic->leave_group(routers[receiver_id], group_id);
+    //routers[receiver_id].leave_group(group_id);
   }
   else {
     cout << "## Unknown command '" << cmd_name << "'." << endl;
     return true;
   }
-  simulate_network();
   return true;
 }
 
