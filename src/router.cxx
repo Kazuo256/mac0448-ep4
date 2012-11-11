@@ -61,11 +61,16 @@ void Router::receive_msg (unsigned id_sender, const string& msg) {
 }
 
 void Router::make_group (unsigned group_id, bool shared) {
-  unsigned id_source = shared ? id() : id();
-  add_new_group(group_id, id_source);
   stringstream msg;
-  msg << "MAKE_GROUP_ROOT" << sep << group_id << sep << id();
-  unicast(id_source, msg.str());
+  msg << "ADD_GROUP" << sep << group_id;
+  unsigned root;
+  if (shared) {
+    root = biggest_delta();
+  } else {
+    root = id_;
+  }
+  msg << sep << root;
+  broadcast(msg.str());
 }
 
 void Router::join_group (unsigned group_id) {
@@ -340,6 +345,24 @@ bool Router::add_new_group (unsigned group_id, unsigned source_id) {
 
 // Métodos privados
 
+unsigned Router::biggest_delta () {
+  unordered_map<unsigned, LinkState>::iterator links_it;
+  unsigned max_delta, router_id;
+  list<Neighbor>::iterator neighbors_it;
+  max_delta = router_id = 0;
+  for (links_it = linkstates_.begin(); links_it != linkstates_.end(); ++links_it) {
+    LinkState aux = links_it->second;
+    unsigned delta = 0;
+    for (neighbors_it = aux.begin(); neighbors_it != aux.end(); ++neighbors_it) {
+      delta++;
+    }
+    if (delta > max_delta) {
+      max_delta = delta;
+      router_id = links_it->first;
+    }
+  }
+  return router_id;
+}
 
 } // namespace ep4
 
