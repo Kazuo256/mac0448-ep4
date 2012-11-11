@@ -20,7 +20,7 @@ class RouterLogic;
 class Router {
   public:
     Router (Network* network, unsigned id) :
-      network_(network), id_(id) {}
+      network_(network), id_(id), cut_broadcast_(false) {}
     //== Métodos básicos ==//
     unsigned id () const { return id_; }
     void receive_msg (unsigned id_sender, const std::string& msg);
