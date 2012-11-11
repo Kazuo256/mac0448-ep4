@@ -17,6 +17,7 @@ set (
   src/transmissionqueue.h
   src/router.cxx
   src/router.h
+  src/routerlogic.h
 )
 
 add_executable (ep4 ${EP4_SRC})

@@ -3,6 +3,7 @@
 #include "router.h"
 #include "network.h"
 #include "packet.h"
+#include "routerlogic.h"
 
 #include <vector>
 #include <string>
@@ -62,7 +63,7 @@ void create_network (const std::string& topology_file) {
   size_t router_num = network.load_topology(topology_file);
   cout << "## Number of routers in the network: " << router_num << endl;
   for (unsigned i = 0; i < router_num; ++i)
-    routers.push_back(Router(&network, i));
+    routers.push_back(Router(&network, i, NULL));
 }
 
 void find_routes () {

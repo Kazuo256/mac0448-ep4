@@ -15,11 +15,12 @@
 namespace ep4 {
 
 class Network;
+class RouterLogic;
 
 class Router {
   public:
     Router (Network* network, unsigned id, RouterLogic* routerlogic) :
-      network_(network), id_(id), lastcost_(0.0), routerlogic_(routerlogic) {}
+      network_(network), routerlogic_(routerlogic), id_(id), lastcost_(0.0) {}
     //== Métodos básicos ==//
     unsigned id () const { return id_; }
     void receive_msg (unsigned id_sender, const std::string& msg);
