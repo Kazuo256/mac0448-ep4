@@ -39,17 +39,16 @@ class Router {
     void handle_unicast (unsigned id_sender, std::stringstream& args);
     void handle_broadcast (unsigned id_sender, std::stringstream& args);
     void add_group (unsigned id_sender, std::stringstream& args);
+    void handle_join (unsigned id_sender, std::stringstream& args);
     //== Métodos para calcular rotas ==//
     // Usados para estado de enlace:
     void broadcast (const std::string& msg);
     void unicast (unsigned id_target, const std::string& msg);
-    double linkstate_route_ms (unsigned id_target, std::vector<unsigned>& route);
     double delay (unsigned origin, unsigned destiny);
     bool comp_ms (unsigned id_1, unsigned id_2) const;
     //== Informações de debug ==//
     void dump_linkstate_table () const;
     // Usados para o multicast
-    bool add_new_group (unsigned group_id, unsigned router_id);
   private:
     Network*                                      network_;
     unsigned                                      id_;
@@ -65,6 +64,10 @@ class Router {
     std::tr1::unordered_set<unsigned>             pending_linkstates_;
     std::vector<unsigned>                         ls_route_ms_;
     std::vector<double>                           ls_cost_ms_;
+    //== Informações dos grupos multicast ==//
+    std::tr1::unordered_map<unsigned, unsigned> group_sources_;
+    // Adiciona informação sobre a fonte do grupo multicast.
+    bool add_new_group (unsigned group_id, unsigned router_id);
     //== Outros ==//
     // Método para formatar a saída do roteador.
     std::ostream& output () const {
@@ -81,7 +84,6 @@ class Router {
       unsigned transmitter;
       CrazyGuys crazy_guys;
     };
-    std::tr1::unordered_map<unsigned, unsigned> groups_;
     std::tr1::unordered_map<unsigned, CrazyStruct> multicasts_;
 };
 
