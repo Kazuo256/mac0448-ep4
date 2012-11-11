@@ -43,7 +43,6 @@ class Router {
     double linkstate_route_ms (unsigned id_target, std::vector<unsigned>& route);
     double delay (unsigned origin, unsigned destiny);
     bool comp_ms (unsigned id_1, unsigned id_2) const;
-    bool comp_hop (unsigned id_1, unsigned id_2) const;
     //== Informações de debug ==//
     void dump_linkstate_table () const;
     // Usados para o multicast
