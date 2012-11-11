@@ -7,7 +7,7 @@ namespace ep4 {
 
 class SharedLogic : public RouterLogic {
 	public:
-		 void helloword();
+		 void helloworld();
 };
 
 } // namespace ep4
