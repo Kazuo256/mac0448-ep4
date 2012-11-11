@@ -32,7 +32,6 @@ typedef void (Router::*Bootstrap) ();
 const static Bootstrap bootstrap_list[] = {
   &Router::start_up,
   &Router::linkstate_begin,
-  &Router::distvector_begin,
   &Router::make_sptree
 };
 
@@ -143,33 +142,6 @@ static void linkstate_route (unsigned id_origin, unsigned id_destiny,
   cout << "## Finding route..." << endl;
   vector<unsigned> route;
   double total_delay = (routers[id_origin].*method) (id_destiny, route);
-  // E exibimos a rota para o usuário
-  for (vector<unsigned>::iterator it = route.begin(); it != route.end(); ++it)
-    cout << *it << " ";
-  cout << "(";
-  if (metric == "h")
-    cout << route.size() << " hops";
-  else if (metric == "a")
-    cout << total_delay << " milisegundos";
-  cout << ")" << endl;
-}
-
-static void distvector_route (unsigned id_origin, unsigned id_destiny,
-                              const string& metric) {
-  typedef void (Router::*RoutingMethod) (unsigned);
-  // Detecta qual algoritmo de roteamento solicitado
-  RoutingMethod method = NULL;
-  if (metric == "a") method = &Router::distvector_route_ms;
-  else if (metric == "h") method = &Router::distvector_route_hop;
-  else {
-    cout << "## Unknown metric '" << metric << "'." << endl;
-    return;
-  }
-  cout << "## Finding route..." << endl;
-  (routers[id_origin].*method) (id_destiny);
-  simulate_network();
-  vector<unsigned> route;
-  double total_delay = routers[id_destiny].distvector_extract_route(route);
   // E exibimos a rota para o usuário
   for (vector<unsigned>::iterator it = route.begin(); it != route.end(); ++it)
     cout << *it << " ";

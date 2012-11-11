@@ -34,9 +34,6 @@ const static pair<string, MsgHandler> handler_list[] = {
   make_pair("ACK_HELLO", &Router::acknowledge_neighbor),
   make_pair("REQ_LINKSTATE", &Router::respond_linkstate),
   make_pair("ANSWER_LINKSTATE", &Router::receive_linkstate),
-  make_pair("DISTVECTOR", &Router::receive_distvector),
-  make_pair("ROUTE_MS", &Router::route_ms),
-  make_pair("ROUTE_HOP", &Router::route_hop),
   make_pair("ADD_GROUP", &Router::add_group),
   make_pair("ROUTE", &Router::route),
 };
@@ -69,7 +66,6 @@ const static string sep = " ";
 
 void Router::start_up () {
   linkstates_[id_] = LinkState();
-  distvectors_[id_] = DistVector();
   network_->local_broadcast(id_, "HELLO");
 }
 
@@ -82,10 +78,6 @@ void Router::linkstate_begin () {
     network_->send(id_, it->id, request.str());
     pending_linkstates_.insert(it->id);
   }
-}
-
-void Router::distvector_begin () {
-  send_distvector();
 }
 
 void Router::make_sptree () {
@@ -122,10 +114,8 @@ void Router::acknowledge_hello (unsigned id_sender, stringstream& args) {
 
 void Router::acknowledge_neighbor (unsigned id_sender, stringstream& args) {
   Neighbor  neighbor = { id_sender, network_->get_delay(id_, id_sender) };
-  Dist      distvector = { neighbor.delay, 1 };
   neighbors_[id_sender] = neighbor.delay;
   linkstates_[id_].push_back(neighbor);
-  distvectors_[id_][id_sender] = distvector;
   output() << "Acknowledges neighbor " << id_sender << "." << endl;
 }
 
@@ -242,56 +232,6 @@ void Router::receive_linkstate (unsigned id_sender, stringstream& args) {
     }
     network_->send(id_, next, answer.str());
   }
-}
-
-void Router::receive_distvector (unsigned id_sender, stringstream& args) {
-  output() << "Received distance vector from " << id_sender << endl;
-  DistVector& updated = distvectors_[id_sender];
-  while (!args.eof()) {
-    string token;
-    args >> token;
-    unsigned  id;
-    size_t    div1 = token.find(':', 0),
-              div2 = token.find(':', div1+1),
-              hops;
-    double    delay;
-    stringstream(token.substr(0, div1)) >> id;
-    stringstream(token.substr(div1+1, div2-div1)) >> delay;
-    stringstream(token.substr(div2+1)) >> hops;
-    Dist dist = { delay, hops };
-    updated[id] = dist;
-  }
-  bool changed = false;
-  DistVector& dists = distvectors_[id_];
-  for (DistVector::iterator it = updated.begin(); it != updated.end(); ++it)
-    if (it->first != id_) {
-      Dist new_dist = {
-        neighbors_[id_sender] + it->second.delay,
-        1 + it->second.hops
-      };
-      DistVector::iterator dist = dists.find(it->first);
-      if (dist == dists.end())
-        dists[it->first] = new_dist,
-        changed = true;
-      else {
-        if (dist->second.delay > new_dist.delay)
-          dist->second.delay = new_dist.delay,
-          changed = true;
-        if (dist->second.hops > new_dist.hops)
-          dist->second.hops = new_dist.hops,
-          changed = true;
-      }
-    }
-  if (changed)
-    send_distvector();
-}
-
-void Router::route_ms (unsigned id_sender, stringstream& args) {
-  dv_handle_route(args, mem_fn(&Dist::get_delay), "MS");
-}
-
-void Router::route_hop (unsigned id_sender, stringstream& args) {
-  dv_handle_route(args, mem_fn(&Dist::get_hops), "HOP");
 }
 
 void Router::route (unsigned id_sender, stringstream& args) {
@@ -437,73 +377,6 @@ double Router::linkstate_route_hop (unsigned id_target, vector<unsigned>& route)
   return ls_cost_hop_[id_target];
 }
 
-void Router::distvector_route_ms (unsigned id_target) {
-  if (id_target == id_) return;
-  dv_follow_route(id_target, 0.0, "", mem_fn(&Dist::get_delay), "MS");
-}
-
-void Router::distvector_route_hop (unsigned id_target) {
-  if (id_target == id_) return;
-  dv_follow_route(id_target, 0.0, "", mem_fn(&Dist::get_hops), "HOP");
-}
-
-void Router::dv_handle_route (stringstream& args, Metric metric,
-                              const string& metric_name) {
-  unsigned  id_target;
-  double    cost;
-  args >> id_target;
-  args >> cost;
-  if (id_target == id_) {
-    lastcost_ = cost;
-    while (!args.eof()) {
-      unsigned id;
-      args >> id;
-      lastroute_.push_back(id);
-    }
-    return;
-  }
-  string path;
-  getline(args, path);
-  dv_follow_route(id_target, cost, path, metric, metric_name);
-}
-
-void Router::dv_follow_route (unsigned id_target, double cost,
-                              const string& path, Metric metric,
-                              const string& metric_name) {
-  unsigned      next = dv_next_step(id_target, metric);
-  stringstream  msg;
-  Dist          dist = { neighbors_[next], 1 };
-  msg << "ROUTE_" << metric_name
-      << sep << id_target
-      << sep << (cost+metric(dist))
-      << path
-      << sep << id_;
-  network_->send(id_, next, msg.str());
-}
-
-unsigned Router::dv_next_step (unsigned id_target, Metric metric) {
-  double    mincost = numeric_limits<double>::max();
-  unsigned  next = id_;
-  for (unordered_map<unsigned, double>::iterator it = neighbors_.begin();
-       it != neighbors_.end(); ++it) {
-    Dist dist = { it->second, 1 };
-    double cost = metric(dist) + metric(distvectors_[it->first][id_target]);
-    if (mincost > cost)
-      mincost = cost,
-      next = it->first;
-  }
-  return next;
-}
-
-double Router::distvector_extract_route (vector<unsigned>& route) {
-  route.insert(route.end(), lastroute_.begin(), lastroute_.end());
-  route.push_back(id_);
-  double cost = lastcost_;
-  lastroute_.clear();
-  lastcost_ = 0.0;
-  return cost;
-}
-
 // Informações de debug
 
 void Router::dump_linkstate_table () const {
@@ -518,20 +391,6 @@ void Router::dump_linkstate_table () const {
   }
 }
 
-// Métodos privados
-
-void Router::send_distvector () {
-  stringstream msg;
-  msg << "DISTVECTOR";
-  DistVector& neighbors = distvectors_[id_];
-  for (DistVector::const_iterator it = neighbors.begin();
-       it != neighbors.end(); ++it)
-    msg << sep << it->first
-        << ":" << it->second.delay
-        << ":" << it->second.hops;
-  network_->local_broadcast(id_, msg.str());
-}
-
 bool Router::add_new_group (unsigned group_id, unsigned router_id) {
   unordered_map<unsigned, unsigned>::iterator has = groups_.find(group_id);
   if (has == groups_.end()) {
@@ -540,6 +399,9 @@ bool Router::add_new_group (unsigned group_id, unsigned router_id) {
   }
   return false;
 }
+
+// Métodos privados
+
 
 } // namespace ep4
 
