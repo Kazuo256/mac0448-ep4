@@ -202,7 +202,7 @@ static bool handle_command (stringstream& command) {
     if (!check_args(command)) return true;
     command >> source_id;
     if (!check_id(source_id)) return true;
-    routers[source_id].make_group(group_id);
+    routerlogic->make_group(routers[source_id], group_id);
     cout << "## Multicast group with ID " << group_id << " created." << endl;
   }
   else if (cmd_name == "join") {
@@ -215,7 +215,7 @@ static bool handle_command (stringstream& command) {
     if (group_id >= next) {
       cout << "## No multicast group with ID " << group_id << "." << endl;
     }
-    routers[receiver_id].join_group(group_id);
+    routerlogic->join_group(routers[receiver_id], group_id);
   }
   else if (cmd_name == "leave") {
     unsigned receiver_id, group_id;
@@ -227,7 +227,7 @@ static bool handle_command (stringstream& command) {
     if (group_id >= next) {
       cout << "## No multicast group with ID " << group_id << "." << endl;
     }
-    routers[receiver_id].leave_group(group_id);
+    routerlogic->leave_group(routers[receiver_id], group_id);
   }
   else {
     cout << "## Unknown command '" << cmd_name << "'." << endl;

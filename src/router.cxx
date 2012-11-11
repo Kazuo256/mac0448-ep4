@@ -86,20 +86,6 @@ void Router::distvector_begin () {
   send_distvector();
 }
 
-//=== Métodos de grupos multicast ===//
-
-void Router::make_group (unsigned group_id) {
-  logic_->make_group(id(), group_id);
-}
-
-void Router::join_group (unsigned group_id) {
-  logic_->join_group(id(), group_id);
-}
-
-void Router::leave_group (unsigned group_id) {
-  logic_->leave_group(id(), group_id);
-}
-
 // Métodos que tratam mensagens
 
 void Router::acknowledge_hello (unsigned id_sender, stringstream& args) {

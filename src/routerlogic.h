@@ -6,14 +6,16 @@
 
 namespace ep4 {
 
+class Router;
+
 class RouterLogic {
 	public:
 		virtual void handle_msg (unsigned reveiver_id, unsigned sender_id,
                              const std::string& msg_name,
                              std::stringstream& args) {}
-    virtual void make_group (unsigned source_id, unsigned group_id) {}
-    virtual void join_group (unsigned router_id, unsigned group_id) {}
-    virtual void leave_group (unsigned router_id, unsigned group_id) {}
+    virtual void make_group (Router& source, unsigned group_id) {}
+    virtual void join_group (Router& router, unsigned group_id) {}
+    virtual void leave_group (Router& router, unsigned group_id) {}
 		virtual ~RouterLogic() {}
 };
 
