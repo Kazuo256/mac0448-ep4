@@ -353,8 +353,8 @@ unsigned Router::biggest_delta () {
   for (links_it = linkstates_.begin(); links_it != linkstates_.end(); ++links_it) {
     LinkState aux = links_it->second;
     unsigned delta = 0;
-    for (neighbors_it = aux->second.begin(); neighbors_it != aux.end(); ++neighbors_it) {
-      delta += neighbors_it->delay;      
+    for (neighbors_it = aux.begin(); neighbors_it != aux.end(); ++neighbors_it) {
+      delta++;
     }
     if (delta > max_delta) {
       max_delta = delta;
