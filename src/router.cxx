@@ -57,8 +57,18 @@ void Router::receive_msg (unsigned id_sender, const string& msg) {
   unordered_map<string, MsgHandler>::const_iterator it = handlers.find(header);
   if (it != handlers.end())
     (this->*(it->second))(id_sender, tokens);
-  else
-    logic_->handle_msg(id(), id_sender, header, tokens);
+}
+
+void Router::make_group (unsigned group_id, bool shared) {
+
+}
+
+void Router::join_group (unsigned group_id) {
+
+}
+
+void Router::leave_group (unsigned group_id) {
+
 }
 
 // Métodos de bootstrap

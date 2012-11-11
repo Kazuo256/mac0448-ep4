@@ -17,9 +17,6 @@ void find_routes ();
 /// Roda o prompt para o usuário solicitar rotas.
 void run_prompt (const std::string& progname);
 
-// Libera memória usada.
-void clean_up ();
-
 } // namespace ep4
 
 #endif

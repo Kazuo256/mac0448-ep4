@@ -19,11 +19,14 @@ class RouterLogic;
 
 class Router {
   public:
-    Router (Network* network, unsigned id, RouterLogic* logic) :
-      network_(network), logic_(logic), id_(id) {}
+    Router (Network* network, unsigned id) :
+      network_(network), id_(id) {}
     //== Métodos básicos ==//
     unsigned id () const { return id_; }
     void receive_msg (unsigned id_sender, const std::string& msg);
+    void make_group (unsigned group_id, bool shared);
+    void join_group (unsigned group_id);
+    void leave_group (unsigned group_id);
     //== Métodos de bootstrap ==//
     void start_up ();
     void linkstate_begin ();
@@ -49,7 +52,6 @@ class Router {
     bool add_new_group (unsigned group_id, unsigned router_id);
   private:
     Network*                                      network_;
-    RouterLogic*                                  logic_;
     unsigned                                      id_;
     std::tr1::unordered_map<unsigned, double>     neighbors_;
     bool                                          cut_broadcast_;

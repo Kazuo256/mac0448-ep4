@@ -43,8 +43,8 @@ const static Bootstrap *const bootstrap_end =
 static vector<Router>     routers;
 // A rede.
 static Network            network;
-// Método usado para 
-static RouterLogic*        routerlogic;
+// Método usado nas árvores multicast
+static bool               shared = false;
 // Os métodos de bootstrap para os algoritmos de roteamento.
 static vector<Bootstrap>  bootstraps(bootstrap_list,
                                      bootstrap_end);
@@ -61,16 +61,17 @@ static void create_network (const std::string& topology_file) {
   size_t router_num = network.load_topology(topology_file);
   cout << "## Number of routers in the network: " << router_num << endl;
   for (unsigned i = 0; i < router_num; ++i)
-    routers.push_back(Router(&network, i, routerlogic));
+    routers.push_back(Router(&network, i));
 }
 
 void init_simulation (const std::string& topology_file, 
                       const std::string& multicast_type ) {
-  if (multicast_type == "SOURCE" || multicast_type == "source") {
-    routerlogic = NULL;  
-  } else {
-    routerlogic = NULL;
-  }
+  if (multicast_type == "SOURCE" || multicast_type == "source")
+    shared = false;
+  else if (multicast_type == "SHARED" || multicast_type == "shared")
+    shared = true;
+  else
+    cout << "## Unknown multicast type. Defaulting to SOURCE.";
   create_network(topology_file);
 }
 
@@ -91,10 +92,6 @@ void run_prompt (const string& progname) {
     if (!handle_command(command)) return;
   }
   cout << endl;
-}
-
-void clean_up () {
-  delete routerlogic;
 }
 
 static void simulate_network () {
@@ -144,7 +141,7 @@ static bool handle_command (stringstream& command) {
     if (!check_args(command)) return true;
     command >> source_id;
     if (!check_id(source_id)) return true;
-    //routers[source_id].make_group(group_id);
+    routers[source_id].make_group(group_id, shared);
     cout << "## Multicast group with ID " << group_id << " created." << endl;
   }
   else if (cmd_name == "join") {
@@ -157,7 +154,7 @@ static bool handle_command (stringstream& command) {
     if (group_id >= next) {
       cout << "## No multicast group with ID " << group_id << "." << endl;
     }
-    //routers[receiver_id].join_group(group_id);
+    routers[receiver_id].join_group(group_id);
   }
   else if (cmd_name == "leave") {
     unsigned receiver_id, group_id;
@@ -169,7 +166,7 @@ static bool handle_command (stringstream& command) {
     if (group_id >= next) {
       cout << "## No multicast group with ID " << group_id << "." << endl;
     }
-    //routers[receiver_id].leave_group(group_id);
+    routers[receiver_id].leave_group(group_id);
   }
   else {
     cout << "## Unknown command '" << cmd_name << "'." << endl;

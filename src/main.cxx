@@ -16,7 +16,6 @@ int main (int argc, char** argv) {
   ep4::init_simulation(argv[1], argv[2]);
   ep4::find_routes();
   ep4::run_prompt(argv[0]);
-  ep4::clean_up();
   // Execução bem sucedida
   return EXIT_SUCCESS;
 }
