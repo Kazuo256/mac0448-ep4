@@ -43,7 +43,6 @@ class Router {
     // Usados para estado de enlace:
     void broadcast (const std::string& msg);
     void unicast (unsigned id_target, const std::string& msg);
-    double linkstate_route_ms (unsigned id_target, std::vector<unsigned>& route);
     double delay (unsigned origin, unsigned destiny);
     bool comp_ms (unsigned id_1, unsigned id_2) const;
     //== Informações de debug ==//
