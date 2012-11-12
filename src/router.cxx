@@ -101,7 +101,7 @@ void Router::report_group (unsigned group_id) const {
   cout << "netid " << group_info.transmitter << " eh a fonte dos dados" << endl;
   for (CrazyGuys::const_iterator it = group_info.crazy_guys.begin();
        it != group_info.crazy_guys.end(); ++it) {
-    cout.width(10);
+    cout.width(9);
     cout << "";
     cout.width(1);
     cout << "netid " << it->first << " ";
@@ -348,7 +348,7 @@ void Router::unicast (unsigned id_target, const string& msg) {
   unsigned router = id_target;
   std::stack<unsigned> stack;
   stack.push(id_target);
-  while (ls_route_ms_[router] != router) {
+  while (ls_route_ms_[router] != id()) {
     stack.push(ls_route_ms_[router]);
     router = ls_route_ms_[router];
   }
@@ -357,9 +357,7 @@ void Router::unicast (unsigned id_target, const string& msg) {
     stack.pop();
   }
   routing_msg << sep << "|" << sep << msg;
-  stringstream args;
-  args << routing_msg;
-  handle_unicast(id(), args);
+  handle_unicast(id(), routing_msg);
 }
 
 bool Router::comp_ms (unsigned id_1, unsigned id_2) const {
