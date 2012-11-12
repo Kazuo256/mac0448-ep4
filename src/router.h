@@ -8,6 +8,7 @@
 #include <list>
 #include <vector>
 #include <queue>
+#include <map>
 #include <tr1/unordered_map>
 #include <tr1/unordered_set>
 #include <tr1/functional>
@@ -27,6 +28,8 @@ class Router {
     void make_group (unsigned group_id, bool shared);
     void join_group (unsigned group_id);
     void leave_group (unsigned group_id);
+    unsigned group_source (unsigned group_id) const;
+    void report_group (unsigned group_id) const;
     //== Métodos de bootstrap ==//
     void start_up ();
     void linkstate_begin ();
@@ -65,7 +68,13 @@ class Router {
     std::vector<unsigned>                         ls_route_ms_;
     std::vector<double>                           ls_cost_ms_;
     //== Informações dos grupos multicast ==//
-    std::tr1::unordered_map<unsigned, unsigned> group_sources_;
+    typedef std::map<unsigned, unsigned> CrazyGuys;
+    struct CrazyStruct {
+      unsigned transmitter;
+      CrazyGuys crazy_guys;
+    };
+    std::tr1::unordered_map<unsigned, unsigned>     group_sources_;
+    std::tr1::unordered_map<unsigned, CrazyStruct>  multicasts_;
     // Adiciona informação sobre a fonte do grupo multicast.
     bool add_new_group (unsigned group_id, unsigned router_id);
     //== Outros ==//
@@ -79,12 +88,6 @@ class Router {
       cut_broadcast_ = cut;
       return before;
     }
-    typedef std::tr1::unordered_map<unsigned, unsigned> CrazyGuys;
-    struct CrazyStruct {
-      unsigned transmitter;
-      CrazyGuys crazy_guys;
-    };
-    std::tr1::unordered_map<unsigned, CrazyStruct> multicasts_;
 };
 
 } // namespace ep4

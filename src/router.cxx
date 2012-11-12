@@ -15,6 +15,7 @@ using std::cout;
 using std::endl;
 using std::pair;
 using std::make_pair;
+using std::map;
 using std::tr1::unordered_map;
 using std::tr1::unordered_set;
 using std::tr1::function;
@@ -82,6 +83,27 @@ void Router::join_group (unsigned group_id) {
 
 void Router::leave_group (unsigned group_id) {
 
+}
+
+unsigned Router::group_source (unsigned group_id) const {
+  return group_sources_.find(group_id)->second;
+}
+
+void Router::report_group (unsigned group_id) const {
+  unordered_map<unsigned, CrazyStruct>::const_iterator check =
+    multicasts_.find(group_id);
+  if (check == multicasts_.end()) {
+    output() << "You sure about that?" << endl;
+    return;
+  }
+  
+    //cout.width(10);
+    //cout << std::left << "group " << i << ":";
+    //for (vector<Router>::const_iterator it = routers.begin();
+    //     it != routers.end(); ++it) {
+    //  cout 
+    //}
+    //cout << endl;
 }
 
 // Métodos de bootstrap
@@ -301,20 +323,21 @@ void Router::handle_join (unsigned id_sender, stringstream& args) {
   args >> joiner_id;
   unordered_map<unsigned, CrazyStruct>::iterator it = multicasts_.find(group_id);
   if (it == multicasts_.end()) 
-    cout << "AERROOOOOOOOOOOOOOOOOOOOOOOOOOOO!" << endl;
+    output() << "WARNING: join request with bad group ID." << endl;
   else {
-    CrazyGuys aux = it->second.crazy_guys;
-    std::tr1::unordered_map<unsigned, unsigned>::iterator crazy_it = aux.find(joiner_id);
+    CrazyGuys &aux = it->second.crazy_guys;
+    map<unsigned, unsigned>::iterator crazy_it = aux.find(joiner_id);
     if (crazy_it == aux.end())
       aux.insert(make_pair(joiner_id, 1));
     else
-      aux[joiner_id]++;
+      crazy_it->second++;
   }
 }
 
 //== Métodos para calcular rotas ==//
 
 void Router::broadcast (const string& msg) {
+  network_->send(id(), id(), msg);
   network_->local_broadcast(id(), "BROADCAST"+sep+msg);
 }
 

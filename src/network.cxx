@@ -57,7 +57,7 @@ void Network::local_broadcast (unsigned id_sender, const string& msg) {
 void Network::send (unsigned id_sender, unsigned id_receiver,
                     const string& msg) {
   double delay = topology_[id_sender][id_receiver];
-  if (delay < 0.0)
+  if (id_sender != id_receiver && delay < 0.0)
     return;
   Packet packet = { id_sender, id_receiver, msg };
   cout << packet << endl;

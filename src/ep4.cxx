@@ -55,6 +55,9 @@ static void simulation_step (const Bootstrap& bootstrap_method);
 // prompt deve continuar ou não. Se for falso, o prompt deve terminar.
 static bool handle_command (stringstream& command);
 
+// Imprime relatório dos grupos de multicast.
+static void report_groups ();
+
 static void create_network (const std::string& topology_file) {
   size_t router_num = network.load_topology(topology_file);
   cout << "## Number of routers in the network: " << router_num << endl;
@@ -89,6 +92,7 @@ void run_prompt (const string& progname) {
     stringstream command(line);
     if (line.empty()) continue;
     if (!handle_command(command)) return;
+    report_groups();
   }
   cout << endl;
 }
@@ -173,6 +177,15 @@ static bool handle_command (stringstream& command) {
   }
   simulate_network();
   return true;
+}
+
+void report_groups () {
+  cout << "## Reporting multicast groups..." << endl;
+  for (unsigned i = 0; i < next; ++i) {
+    unsigned id_source = routers[0].group_source(i);
+    cout << "## ROOT=" << id_source << endl;
+    routers[id_source].report_group(i);
+  }
 }
 
 } // namespace ep4
