@@ -415,7 +415,7 @@ unsigned Router::biggest_delta () {
     LinkState aux = links_it->second;
     unsigned delta = 0;
     for (neighbors_it = aux.begin(); neighbors_it != aux.end(); ++neighbors_it) {
-      delta++;
+      delta += (neighbors_it->delay >= 0);
     }
     if (delta > max_delta) {
       max_delta = delta;
