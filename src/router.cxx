@@ -96,13 +96,21 @@ void Router::report_group (unsigned group_id) const {
     output() << "You sure about that?" << endl;
     return;
   }
-  CrazyStruct const&group_info = check->second;
-  cout << std::left << "group " << group_id << ":";
+  const CrazyStruct &group_info = check->second;
+  cout << std::left << "group " << group_id << ": ";
+  cout << "netid " << group_info.transmitter << " eh a fonte dos dados" << endl;
   for (CrazyGuys::const_iterator it = group_info.crazy_guys.begin();
        it != group_info.crazy_guys.end(); ++it) {
+    cout.width(10);
+    cout << "";
+    cout.width(1);
     cout << "netid " << it->first << " ";
+    cout << "tem ";
+    if (it->second > 1)
+      cout << it->second << " receptores dos dados" << endl;
+    else
+      cout << it->second << " receptor dos dados" << endl;
   }
-  cout << endl;
 }
 
 // Métodos de bootstrap
