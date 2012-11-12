@@ -76,7 +76,8 @@ class Router {
     std::tr1::unordered_map<unsigned, unsigned>     group_sources_;
     std::tr1::unordered_map<unsigned, CrazyStruct>  multicasts_;
     // Adiciona informação sobre a fonte do grupo multicast.
-    bool add_new_group (unsigned group_id, unsigned router_id);
+    bool add_new_group (unsigned group_id, unsigned source_id,
+                        unsigned transmitter_id);
     //== Outros ==//
     // Método para formatar a saída do roteador.
     std::ostream& output () const {

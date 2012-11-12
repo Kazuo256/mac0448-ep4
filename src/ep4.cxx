@@ -183,7 +183,6 @@ void report_groups () {
   cout << "## Reporting multicast groups..." << endl;
   for (unsigned i = 0; i < next; ++i) {
     unsigned id_source = routers[0].group_source(i);
-    cout << "## ROOT=" << id_source << endl;
     routers[id_source].report_group(i);
   }
 }

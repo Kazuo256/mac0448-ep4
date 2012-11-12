@@ -70,7 +70,7 @@ void Router::make_group (unsigned group_id, bool shared) {
     root = biggest_delta();
   else
     root = id();
-  add_new_group(group_id, root);
+  add_new_group(group_id, root, id());
   msg << sep << root << sep << id();
   broadcast(msg.str());
 }
@@ -96,14 +96,13 @@ void Router::report_group (unsigned group_id) const {
     output() << "You sure about that?" << endl;
     return;
   }
-  
-    //cout.width(10);
-    //cout << std::left << "group " << i << ":";
-    //for (vector<Router>::const_iterator it = routers.begin();
-    //     it != routers.end(); ++it) {
-    //  cout 
-    //}
-    //cout << endl;
+  CrazyStruct const&group_info = check->second;
+  cout << std::left << "group " << group_id << ":";
+  for (CrazyGuys::const_iterator it = group_info.crazy_guys.begin();
+       it != group_info.crazy_guys.end(); ++it) {
+    cout << "netid " << it->first << " ";
+  }
+  cout << endl;
 }
 
 // Métodos de bootstrap
@@ -308,13 +307,8 @@ void Router::add_group (unsigned id_sender, stringstream& args) {
   args >> group_id;
   args >> root;
   args >> transmitter;
-  if (!add_new_group(group_id, root))
+  if (!add_new_group(group_id, root, transmitter))
     cut_broadcast(true);
-  if (root == id()) {
-    CrazyStruct crazy;
-    crazy.transmitter = transmitter;    
-    multicasts_.insert(make_pair(group_id, crazy));
-  }
 }
 
 void Router::handle_join (unsigned id_sender, stringstream& args) {
@@ -387,12 +381,18 @@ void Router::dump_linkstate_table () const {
   }
 }
 
-bool Router::add_new_group (unsigned group_id, unsigned source_id) {
+bool Router::add_new_group (unsigned group_id, unsigned source_id,
+                            unsigned transmitter_id) {
   unordered_map<unsigned, unsigned>::iterator has = group_sources_.find(group_id);
   if (has == group_sources_.end()) {
     group_sources_.insert(make_pair(group_id, source_id));
     output()  << "Acknowledges multicast group with ID " << group_id
               << "." << endl;
+    if (source_id == id()) {
+      CrazyStruct crazy;
+      crazy.transmitter = transmitter_id;
+      multicasts_.insert(make_pair(group_id, crazy));
+    }
     return true;
   }
   return false;
