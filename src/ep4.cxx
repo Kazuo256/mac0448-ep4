@@ -92,7 +92,6 @@ void run_prompt (const string& progname) {
     stringstream command(line);
     if (line.empty()) continue;
     if (!handle_command(command)) return;
-    report_groups();
   }
   cout << endl;
 }
@@ -179,6 +178,8 @@ static bool handle_command (stringstream& command) {
     return true;
   }
   simulate_network();
+  if (cmd_name == "join" || cmd_name == "leave")
+    report_groups();
   return true;
 }
 
