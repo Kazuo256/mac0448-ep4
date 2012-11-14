@@ -103,9 +103,7 @@ void Router::report_group (unsigned group_id) const {
   cout << "netid " << group_info.transmitter << " eh a fonte dos dados" << endl;
   for (MembersInfo::const_iterator it = group_info.members.begin();
        it != group_info.members.end(); ++it) {
-    cout.width(9);
-    cout << "";
-    cout.width(1);
+    cout.width(9), cout << "", cout.width(1);
     cout << "netid " << it->first << " ";
     cout << "tem ";
     if (it->second > 1)
@@ -113,14 +111,21 @@ void Router::report_group (unsigned group_id) const {
     else
       cout << it->second << " receptor dos dados" << endl;
   }
-  cout.width(9);
-  cout << "";
-  cout.width(1);
+  cout.width(9), cout << "", cout.width(1);
   cout << "---" << endl;
-  cout.width(9);
-  cout << "";
-  cout.width(1);
+  cout.width(9), cout << "", cout.width(1);
   cout << "arvore raiz: netid" << sep << id() << endl;
+  for (MembersByRank::const_iterator it = group_info.by_rank.begin();
+       it != group_info.by_rank.end(); ++it)
+    if (!it->empty()) {
+      cout.width(9), cout << "", cout.width(1);
+      cout << "arvore nivel " << (it-group_info.by_rank.begin())+1 << ": ";
+      cout << "netid " << it->front();
+      for (list<unsigned>::const_iterator node_it = ++it->begin();
+           node_it != it->end(); ++node_it)
+        cout << ", " << "netid " << *node_it;
+      cout << endl;
+    }
   cout << endl;  
 }
 
@@ -342,8 +347,13 @@ void Router::handle_join (unsigned id_sender, stringstream& args) {
   else {
     MembersInfo &aux = it->second.members;
     map<unsigned, unsigned>::iterator member_it = aux.find(joiner_id);
-    if (member_it == aux.end())
+    if (member_it == aux.end()) {
       aux.insert(make_pair(joiner_id, 1));
+      size_t rank = 0;
+      for (unsigned node = joiner_id; node != id();
+           node = ls_route_ms_[node], ++rank);
+      it->second.by_rank[rank].push_back(joiner_id);
+    }
     else
       member_it->second++;
   }
