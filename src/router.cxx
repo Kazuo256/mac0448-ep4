@@ -111,6 +111,15 @@ void Router::report_group (unsigned group_id) const {
     else
       cout << it->second << " receptor dos dados" << endl;
   }
+  cout.width(9);
+  cout << "";
+  cout.width(1);
+  cout << "---" << endl;
+  cout.width(9);
+  cout << "";
+  cout.width(1);
+  cout << "arvore raiz: netid" << sep << id() << endl;
+  
 }
 
 // Métodos de bootstrap
