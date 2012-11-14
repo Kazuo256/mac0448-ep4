@@ -1,0 +1,369 @@
+
+MAC0448-2012: Programação para Redes de Computadores.
+Quarto Exercício-Programa: Simulador de Protocolos Multicast
+
+Alunos:                     Nº USP:
+  Thiago de Gouveia Nunes     6797289
+  Wilson Kazuo Mizutani       6797230
+
+
+I. Organização dos arquivos.
+
+
+  Nosso EP deve apresentar a seguinte organização de arquivos e pastas:
+
+    ep4-thiago-wilson/
+    |- Makefile
+    |- objs.makefile
+    |- deps.makefile
+    |- LEIAME
+    |- sample_network
+    |- src/
+    |  |- main.cxx
+    |  |- ...demais arquivos de código fonte...
+
+  O arquivo "sample_network" é a topologia de exemplo do enunciado.
+
+II. Compilação.
+
+
+  O programa vem com um Makefile para compilá-lo. Basta usar o comando
+
+    $ make
+
+  para compilar o EP normalmente, ou
+
+    $ make debug
+
+  para compilar com flags de depuração. Se o programa foi compilado normalmente
+alguma vez antes, então é preciso usar
+
+    $ make clean
+
+  antes de tentar compilar no modo de depuração.
+
+
+III. Dependências.
+
+
+  Usamos apenas as bibliotecas padrão, incluindo o Technichal Report 1,
+disponível no mínimo desde o Ubuntu 10.10 e do Debian Stable atual. Supomos que
+o programa será compilado e executado em um Linux como esses (como é o caso da
+RedeLinux do IME, por exemplo).
+
+
+IV. Modo de uso do programa.
+
+
+  Como pede o enunciado, nosso programa segue a seguinte assinatura de linha de
+comando:
+
+    ./ep4 <arquivo_de_entrada> <tipo_de_multicast>
+
+  Onde:
+
+    <arquivo_de_entrada>  É um arquivo de topologia de rede, como especificado
+                          no enunciado.
+    <tipo_de_multicast>   É o tipo de gerenciamento de árvore multicast que deve
+                          ser usado. Pode ser source ou shared.
+
+  Quando o programa roda, ele inicializa as tabelas de roteamento dos roteadores
+para depois entrar em um prompt. No prompt, os comandos aceitos também são
+exatamente aqueles especificados no enunciado.
+
+
+V. Decisões de implementação
+
+  Esse EP apresentava várias possibilidades de implementação para o protocolo
+multicast. Optamos por tentar aproveitar o máximo as informações de estado de
+enlace que os roteadores obtém usando o protocolo implementado no terceiro EP.
+Assim, tanto a árvore multicast baseadas na fonte quanto a compartilhada usam
+as informações de estado de enlace da rede, e essa informação é obtida através
+de uma série de trocas de mensagens que ocorrem entre os roteadores no startup
+da rede (ou seja, a informação "global" da rede é obtidida de maneira realista e
+"justa", embora não necessariamente prática).
+
+  Além disso, usando a restrição do enunciado de que haveria apenas um nó
+transmissor por grupo, a única diferença significativa entre a árvore baseada
+na fonte e a árvore compartilhada fica que na árvore compartilhada a raiz não
+necessariamente seria o nó transmissor. Dessa forma, a menos de como o multicast
+em si é feito, as árvores poderiam ser implementadas da mesma maneira:
+
+    1)  Quando um nó transmissor cria um novo grupo multicast, ele elege um
+        roteador para ser a raiz (na árvore baseada na fonte, será sempre ele
+        mesmo) e notifica a rede disso.
+    2)  O roteador responsável por manter as informações da árvore é o que
+        corresponde ao nó raiz. Quando um novo grupo é criado com ele sendo
+        a raiz, ele inicializa as estruturas necessárias.
+    3)  Roteadores enviam requisitos de join e leave para o nó raiz do grupo.
+        O roteador raiz então atualiza a estrutura da árvore internamente.
+    4)  Os relatórios dos grupos multicast são impressos do ponto de vista do
+        roteador raiz também.
+
+  Como todos os roteadores dispõem do estado de enlace da rede, é fácil montar
+árvores de custo mínimo. A árvore de um grupo multicast é uma árvore de custo
+mínimo com algumas informações a mais nos nós. Consideramos que ramos sem
+membros do grupo não pertencem ativamente da árvore (assim os ramos novos que
+se conectam na árvore compartilhada são simplesmente aqueles nos quais aparecem
+novos membros do grupo). Mas deixamos os ramos "vazios" na árvore porque não há
+motivo para tirar eles de lá: a árvore já é gerada com eles, e gerenciar a
+ausência deles seria desnecessariamente complicado.
+
+  Com todas essas observações e decisões, de fato implementamos as duas árvores
+usando o mesmo código, a menosda decisão dos roteadores raízes dos grupos
+multicast. Ficaria faltando a implementação em si da troca de mensagens usando
+multicast, que talvez divergisse um pouco, mas como isso não é exigido pelos
+critérios do enunciado, não chegamos a esse ponto.
+
+  Talvez fosse interessante tentar implementar a troca de mensagens usando
+multicast, mas por questões de prioridade, preferimos entregar antecipadamente
+o EP do jeito que está e, caso tenhamos mais tempo até o final do semestre,
+tentaremos adicionar essa funcionalidade. Mas, se você está lendo isso,
+significa que provavelmente não tivemos tempo =(.
+
+
+VI. Abstração da Rede
+
+  Continuamos usando a mesma abstração de rede usada no terceiro EP. A única
+diferença é que melhoramos o sistema de entrega de pacotes de maneira que ele
+realmente leve em consideração o atraso das conexões entre os roteadores. Assim,
+pacotes enviados através de conexões mais rápidas chegam antes que outros
+enviados através de conexões mais lentas. O resto dessa seção repete a
+explicação do EP anterior.
+
+  No EP temos duas classes principais: Network e Router. Juntas elas formam uma
+abstração da rede simulada.
+
+  A classe Network mantém as informações da topologia da rede e controla o fluxo
+de pacotes entre os elementos da rede. Quando algum roteador envia uma mensagem
+pela rede, seja para algum vizinho particular ou para todos, a rede constrói os
+pacotes correspondentes e guarda eles numa fila. Um pacote desses é criado
+apenas para os roteadores que forem alvos válidos para ele, mesmo que ele esteja
+ao alcance do pacote - ou seja, roteadores não podem ouvir mensagens que não são
+para eles. A lógica do programa, nos momentos em que simula a rede, extrai os
+pacotes da fila e entrega-os aos devidos roteadores. Esse processo é repetido
+quantas vezes forem necessárias.
+
+  Isso significa, basicamente, que quando um roteador envia uma mensagem, o
+roteador receptor não reage imediatamente. É preciso que chegue a vez do pacote
+de ser removida da fila de transmissões da Network para que finalmente o
+roteador alvo receba o pacote.
+
+  A classe Router representa os roteadores da rede. Existe um objeto dessa
+classe para cada roteador. Todo roteador tem um ID, que é um inteiro não
+negativo e funciona exatamente como se fosse o endereço dele na rede. A classe
+Router tem dois tipos bem diferentes de métodos. O primeiro deles funciona
+normalmente, tendo que ser chamado pela lógica do programa para ser executado,
+e em geral acaba por enviar mensagens para a rede através da classe Network. Já
+o segundo, são métodos que só são chamados em resposta a mensagens da rede.
+
+  Assim, quando algum tipo de procesamento é exigido dos roteadores, o que se
+faz é chamar um dos métodos do primeiro tipo - o que poderá fazer os roteadores
+enviarem mensagens pela rede - para depois simular a rede usando a classe
+Network - o que pode chamar os métodos do segundo tipo nos roteadores - até não
+haver mais pacotes sendo enviados pela rede.
+
+
+VII. Protocolo
+
+  Os pacotes transmitidos pela rede têm o seguinte formato:
+
+   +-----------+-------------+-----+
+   | id_sender | id_receiver | msg |
+   +-----------+-------------+-----+
+
+  Onde:
+
+    id_sender:    é o ID do remetente.
+    id_receiver:  é o ID do destinatário.
+    msg:          é a mensagem sendo transmitida.
+
+  Os pacotes são abstraídos no código pela estrutura Network::Packet. Nela,
+id_sender e id_receiver são do tipo unsigned, e msg é uma string.
+  As mensagens, por sua vez, têm o seguinte formato:
+
+   +----------+------+------+-----+
+   | msg_type | arg1 | arg2 | ... |
+   +----------+------+------+-----+
+
+  Onde:
+
+    msg_type:     é o tipo da mensagem.
+    arg(i):       é o i-ésimo argumento da mensagem.
+
+  Mensagens são abstraísdas no código como strings compostas por palavras
+separadas por espaços. O tipo da mensagem é sempre a primeira palavra, e as
+demais são os argumentos. A quantidade e os possíveis valores dos argumentos
+dependem do tipo de mensagem.
+
+  Segue uma descrição dos tipos de mensagens, agrupadas pelo protocolo da qual
+fazem parte.
+
+  (VI-a) Protocolo de Reconhecimento de Vizinhança (igual ao do EP3)
+
+    Esse protocolo é o primeiro usado na execução do EP. Serve para os
+  roteadores descobrirem seus vizinhos. Há dois tipos de mensagens nesse
+  protocolo: HELLO e HELLO_ACK. Nenhuma delas recebe argumento algum.
+
+    > HELLO
+
+      É a mensagem de "cumprimento" dos roteadores. Cada um deles envia uma
+    essas em broadcast, o que faz ela chegar em todos os seus vizinhos.
+    Quem recebe um HELLO, por sua vez, deve responder com um HELLO_ACK ao
+    remetente do pacote para que ele o reconheça como vizinho.
+
+    > HELLO_ACK
+
+      É a mensagem que os vizinhos mandando em reconhecimento à mensagem HELLO.
+    Uma vez que um roteador recebe uma dessas, ele sabe que o remetente dela é
+    um vizinho seu e guarda essa informação.
+
+  (VI-b) Protocolo de Estado de Enlace (igual ao do EP3)
+
+    Esse protocolo é usado para os roteadores descobrirem o estado de enlace de
+  todos os outros roteadores na rede. Há dois tipos de mensagens usadas por esse
+  protocolo: REQ_LINKSTATE e ANSWER_LINKSTATE.
+
+    > REQ_LINKSTATE <origin> <destiny> [<step1> <step2> ...]
+
+      É a mensagem que um roteador envia requisitando o estado de enlace de
+    algum outro roteador, ou uma requisição que foi repassada. O argumento
+    <origin> é o ID de quem fez a requisição e <destiny> é o ID do roteador
+    para o qual está sendo feita a requisição. Quando o roteador que recebe essa
+    mensagem é o destinatário da requisição, ele emite uma mensagem de
+    ANSWER_LINKSTATE em resposta. Quando ele não é, ele repassa a mensagem.
+      O argumento <step(i)> é o ID do i-ésimo roteador que repassou essa
+    mensagem. Ele serve para evitar que a mensagem seja repassada para
+    roteadores pelos quais ela já passou, e para saber um caminho pelo qual
+    enviar a resposta quando a requisição chegar no seu objetivo.
+      Quando o destinatário não é um vizinho do do roteador que recebeu a
+    mensagem, ele a envia a repassa para todos os vizinhos que não estejam
+    nos argumentos <step(i)>. Isso pode levar a requisições e respostas
+    duplicadas, mas nesse caso os roteadores que fizeram a requisição
+    ignoram a duplicata.
+
+    > ANSWER_LINKSTATE <origin> <destiny> [<step1> ... "|"] <info1> <info2> ...
+
+      É a mensagem que um roteador envia em resposta a uma requisição de estado
+    de enlace, ou uma resposta que foi repassada. O argumento <origin> é o ID do
+    roteador que enviou a resposta e <destiny> é o ID do que originalmente
+    enviou a requisição, e espera pela resposta. Quando o roteador que recebe
+    essa mensagem é quem fez a requisição, ele extrai as informações de estado
+    de enlace desejadas dos argumentos <info(i)> e guarda na sua tabela de
+    roteamento por estado de enlace local. Quando ele não é, ele repassa a
+    resposta para o roteador cujo ID é o primeiro <step(i)> dos argumentos.
+      O argumento <info(i)> contém informações do estado do i-ésimo enlace do
+    roteador que está respondendo a erquisição. Essa informação fica no formato
+    "id:delay", com "id" sendo ID de um vizinho do roteador e "delay" o atraso
+    em milisegundos entre eles.
+      O argumento "|" serve apenas para separar os argumentos <step(i)> dos
+    <info(i)> quando necessário.
+      Os argumentos <step(i)> formam uma rota que a mensagem deve seguir de
+    volta para o roteador que fez a requisição. Quem inicialmente coloca ela na
+    mensagem é o roteador para o qual foi feita a requisição de estado de
+    enlace. Ele a coloca na ordem que deve ser seguida, isso é, inversa àquela
+    pela qual a mensagem passou para chegar até ele. Cada roteador que repassa
+    a mensagem retira dela o primeiro <step(i)>, de forma que o próximo só
+    precisa sempre usar o primeiro deles. Quando não houver mais nenhum, é
+    porque o destinatário da mensagem é vizinho do roteador atual.
+      Para cada argumento <info(i)> que for um ID que o roteador que fez a
+    requisição não conheça, ele envia uma nova requisição para esse ID. Assim,
+    o processo começa com cada roteador requisitando seus vizinhos, depois os
+    vizinhos dos vizinhos, e assim por diante até que todos conheçam todos.
+
+  (VI-c) Protocolo de Broadcast/Unicast (novo)
+
+    Esse protocolo é usado para os roteadores trocarem facilmente mensagens
+  que exijam um broadcast para toda a rede ou um unicast para um roteador
+  específico. Os dois tipos de mensagem dele são BROADCAST e UNICAST.
+
+    > BROADCAST <msg_type> <arg1> <arg2> ...
+
+      É a mensagem que um roteador envia a seus vizinhos para dar broadcast de
+    uma outra mensagem, cujo tipo é dado pelo argumento <msg_type> e cujos
+    argumentos correspondem aos argumentos <arg(i)>. Cada roteador que recebe
+    uma mensagem de broadcast extrai a mensagem encapsulada e trata ela usando o
+    método correspondente. O método que trata a mensagem encapsulada pode chamar
+    o método privado cut_broadcast(true) da classe Router, para impedir que a
+    mensagem continue sendo enviada por broadcast. Se não o fizer, o roteador
+    que recebeu a mensagem de broadcast repete a mensagem para todos os seus
+    vizinhos, com exceção daquele que o enviou a mensagem originalmente.
+
+    > UNICAST <next1> <next2> ... | <msg_type> <arg1> <arg2> ...
+
+      É a mensagem que um roteador envia quando quer mandar uma mensagem para
+    algum roteador específico da rede. Assim como no broadcast, a mensagem em
+    questão fica encapsulada, no caso separada pelo argumento "|". Os argumentos
+    <next(i)> descrevem a rota que a mensagem deve seguir até seu destino, e os
+    argumentos <msg_type> e <arg(i)> compõem a mensagem sendi transmitida via
+    unicast.
+      Cada roteador que recebe essa mensagem verifica se ainda há passos
+    faltando na rota do unicast. Se há, eles retiram o argumento do próximo
+    passo (que será o ID do vizinho para o qual ele deve encaminhar a mensagem)
+    e enviam o que sobrou para o próximo roteador na rota. O rota é gerada pelo
+    emissor original da mensagem, usando o estado de enlace que ele obteve da
+    rede para minimizar o atraso da rota. Caso não haja mais passos sobrando na
+    rota da mensagem, significa que ela chegou ao seu destinatário. Ele então
+    desencapsula a mensagem enviada e trata ela.
+
+  (VI-d) Protocolo de Gerenciamento de Grupos Multicast (novo)
+
+    Esse protocolo é usado para os roteadores criarem grupos multicast, e
+  adicionarem ou removerem membros desses grupos. Há três tipos de mensagens
+  nele: ADD_GROUP, JOIN e LEAVE.
+
+    > ADD_GROUP <group_id> <group_root> <group_transmitter>
+
+      É a mensagem que o roteador que deseja ser transmissor de um grupo
+    multicast envia para notificar a rede do novo grupo criado. Essa mensagem
+    deve ser enviada dentro de uma mensagem BROADCAST.
+      O argumento <group_id> é o ID do novo grupo multicast, e os argumentos
+    <group_root> e <group_transmitter> são o ID do roteador raiz da árvore
+    multicast desse grupo e o ID do roteador no qual o computador transmissor
+    está conectado, respectivamente.
+      O roteador que recebe essa mensagem registra internamente o novo grupo
+    multicast, guardando o ID da raiz da árvore para uso posterior. Se o
+    roteador tiver o mesmo ID que <group_root>, significa que ele será a raiz da
+    árvore multicast e portanto deverá manter a estrutura de dados da árvore
+    consigo. Nesse caso, ele também guarda o valor de <group_transmitter> para
+    poder imprimir essa informação nos relatórios.
+
+    > JOIN <group_id> <joiner_id>
+
+      É a mensagem enviada por um roteador que esteja ligado a um computador
+    interessado em participar do grupo multicast de ID <group_id>. <joiner_id>
+    é o ID desse roteador, e essa mensagem é geralmente enviada dentro de uma
+    mensagem UNICAST, com destino no roteador raiz do grupo.
+      O roteador raiz registra a novo membro e atualiza a árvore multicast do
+    grupo.
+
+    > LEAVE <group_id> <leaver_id>
+
+      É a mensagem enviada por um roteador que esteja ligado a um computador
+    interessado em sair do grupo multicast de ID <group_id>. <leaverer_id> é o
+    ID desse roteador, e essa mensagem é geralmente enviada dentro de uma
+    mensagem UNICAST, com destino no roteador raiz do grupo.
+      O roteador raiz desregistra o membro e atualiza a árvore multicast do
+    grupo.
+
+
+VIII. Organização do código:
+
+  main.cxx: arquivo com a função main().
+
+  ep3.cxx e ep3.h: arquivos com a lógica geral do programa.
+  (a simulação da rede e o prompt está aqui)
+
+  network.cxx e network.h: arquivos com a classe Network.
+  (a transmissão de pacotes está aqui)
+
+  packet.cxx e packet.h: arquivos com a classe Packer.
+  (representação dos pacotes da rede)
+
+  transmissionqueue.cxx e transmissionqueue.h: arquivos com a classe
+  TransmissionQueue.
+  (representação da fila de transmissão "temporizada" dos pacotes)
+
+  router.cxx e router.h: arquivos com a classe Router.
+  (os protocolos de mensagens estão aqui)
+

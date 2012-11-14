@@ -70,8 +70,8 @@ class Router {
     std::vector<unsigned>                         ls_route_ms_;
     std::vector<double>                           ls_cost_ms_;
     //== Informações dos grupos multicast ==//
-    typedef std::map<unsigned, unsigned>        MembersInfo;
-    typedef std::vector< std::set<unsigned> >  MembersByRank;
+    typedef std::map<unsigned, unsigned>      MembersInfo;
+    typedef std::vector< std::set<unsigned> > MembersByRank;
     struct GroupInfo {
       unsigned      transmitter;
       MembersInfo   members;
