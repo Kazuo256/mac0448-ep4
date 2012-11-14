@@ -9,6 +9,7 @@
 using std::numeric_limits;
 using std::list;
 using std::vector;
+using std::priority_queue;
 using std::string;
 using std::stringstream;
 using std::cout;
@@ -62,7 +63,7 @@ void Router::receive_msg (unsigned id_sender, const string& msg) {
     (this->*(it->second))(id_sender, tokens);
 }
 
-void Router::make_group (unsigned group_id, bool shared) {
+unsigned Router::make_group (unsigned group_id, bool shared) {
   stringstream msg;
   msg << "ADD_GROUP" << sep << group_id;
   unsigned root;
@@ -73,6 +74,7 @@ void Router::make_group (unsigned group_id, bool shared) {
   add_new_group(group_id, root, id());
   msg << sep << root << sep << id();
   broadcast(msg.str());
+  return root;
 }
 
 void Router::join_group (unsigned group_id) {
@@ -90,17 +92,17 @@ unsigned Router::group_source (unsigned group_id) const {
 }
 
 void Router::report_group (unsigned group_id) const {
-  unordered_map<unsigned, CrazyStruct>::const_iterator check =
+  unordered_map<unsigned, GroupInfo>::const_iterator check =
     multicasts_.find(group_id);
   if (check == multicasts_.end()) {
     output() << "You sure about that?" << endl;
     return;
   }
-  const CrazyStruct &group_info = check->second;
+  const GroupInfo &group_info = check->second;
   cout << std::left << "group " << group_id << ": ";
   cout << "netid " << group_info.transmitter << " eh a fonte dos dados" << endl;
-  for (CrazyGuys::const_iterator it = group_info.crazy_guys.begin();
-       it != group_info.crazy_guys.end(); ++it) {
+  for (MembersInfo::const_iterator it = group_info.members.begin();
+       it != group_info.members.end(); ++it) {
     cout.width(9);
     cout << "";
     cout.width(1);
@@ -119,7 +121,7 @@ void Router::report_group (unsigned group_id) const {
   cout << "";
   cout.width(1);
   cout << "arvore raiz: netid" << sep << id() << endl;
-  
+  cout << endl;  
 }
 
 // Métodos de bootstrap
@@ -143,7 +145,8 @@ void Router::linkstate_begin () {
 void Router::make_sptree () {
   ls_route_ms_.resize(linkstates_.size(), INFINITO_UNSIGNED);
   ls_cost_ms_.resize(linkstates_.size(), INFINITO_DOUBLE);
-  std::priority_queue<unsigned, vector<unsigned>, std::tr1::function<bool (unsigned, unsigned)> > 
+  priority_queue<unsigned, vector<unsigned>,
+                 function<bool (unsigned, unsigned)> > 
       PQ(bind(&Router::comp_ms, this, _1, _2));
   ls_cost_ms_[id_] = 0.0;
   ls_route_ms_[id_] = id_;
@@ -152,7 +155,8 @@ void Router::make_sptree () {
     unsigned n = PQ.top();
     PQ.pop();
     LinkState& link_n = linkstates_[n];
-    for (std::list<Router::Neighbor>::iterator it = link_n.begin(); it != link_n.end(); ++it) {
+    for (list<Router::Neighbor>::iterator it = link_n.begin();
+         it != link_n.end(); ++it) {
       double cost = delay(n, it->id);
       if (ls_cost_ms_[it->id] == INFINITO_DOUBLE) {
         ls_cost_ms_[it->id] = ls_cost_ms_[n] + cost;
@@ -332,16 +336,16 @@ void Router::handle_join (unsigned id_sender, stringstream& args) {
   unsigned group_id, joiner_id;
   args >> group_id;
   args >> joiner_id;
-  unordered_map<unsigned, CrazyStruct>::iterator it = multicasts_.find(group_id);
+  unordered_map<unsigned, GroupInfo>::iterator it = multicasts_.find(group_id);
   if (it == multicasts_.end()) 
     output() << "WARNING: join request with bad group ID." << endl;
   else {
-    CrazyGuys &aux = it->second.crazy_guys;
-    map<unsigned, unsigned>::iterator crazy_it = aux.find(joiner_id);
-    if (crazy_it == aux.end())
+    MembersInfo &aux = it->second.members;
+    map<unsigned, unsigned>::iterator member_it = aux.find(joiner_id);
+    if (member_it == aux.end())
       aux.insert(make_pair(joiner_id, 1));
     else
-      crazy_it->second++;
+      member_it->second++;
   }
 }
 
@@ -404,9 +408,10 @@ bool Router::add_new_group (unsigned group_id, unsigned source_id,
     output()  << "Acknowledges multicast group with ID " << group_id
               << "." << endl;
     if (source_id == id()) {
-      CrazyStruct crazy;
-      crazy.transmitter = transmitter_id;
-      multicasts_.insert(make_pair(group_id, crazy));
+      GroupInfo group;
+      group.transmitter = transmitter_id;
+      group.by_rank.resize(linkstates_.size());
+      multicasts_.insert(make_pair(group_id, group));
     }
     return true;
   }

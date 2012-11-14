@@ -128,6 +128,7 @@ static bool check_args (const stringstream& command) {
 }
 
 static unsigned next = 0;
+static vector<unsigned> roots;
 
 static unsigned next_id () {
   return next++;
@@ -145,7 +146,7 @@ static bool handle_command (stringstream& command) {
     command >> source_id;
     if (!check_id(source_id)) return true;
     cout << "## Creating multicast group with ID " << group_id << "." << endl;
-    routers[source_id].make_group(group_id, shared);
+    roots.push_back(routers[source_id].make_group(group_id, shared));
   }
   else if (cmd_name == "join") {
     unsigned receiver_id, group_id;
@@ -181,10 +182,8 @@ static bool handle_command (stringstream& command) {
 
 void report_groups () {
   cout << "## Reporting multicast groups..." << endl;
-  for (unsigned i = 0; i < next; ++i) {
-    unsigned id_source = routers[0].group_source(i);
-    routers[id_source].report_group(i);
-  }
+  for (vector<unsigned>::iterator it = roots.begin(); it != roots.end(); ++it)
+    routers[*it].report_group(it-roots.begin());
 }
 
 } // namespace ep4

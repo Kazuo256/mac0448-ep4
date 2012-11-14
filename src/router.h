@@ -25,7 +25,7 @@ class Router {
     //== Métodos básicos ==//
     unsigned id () const { return id_; }
     void receive_msg (unsigned id_sender, const std::string& msg);
-    void make_group (unsigned group_id, bool shared);
+    unsigned make_group (unsigned group_id, bool shared);
     void join_group (unsigned group_id);
     void leave_group (unsigned group_id);
     unsigned group_source (unsigned group_id) const;
@@ -68,13 +68,15 @@ class Router {
     std::vector<unsigned>                         ls_route_ms_;
     std::vector<double>                           ls_cost_ms_;
     //== Informações dos grupos multicast ==//
-    typedef std::map<unsigned, unsigned> CrazyGuys;
-    struct CrazyStruct {
-      unsigned transmitter;
-      CrazyGuys crazy_guys;
+    typedef std::map<unsigned, unsigned>        MembersInfo;
+    typedef std::vector< std::list<unsigned> >  MembersByRank;
+    struct GroupInfo {
+      unsigned      transmitter;
+      MembersInfo   members;
+      MembersByRank by_rank;
     };
-    std::tr1::unordered_map<unsigned, unsigned>     group_sources_;
-    std::tr1::unordered_map<unsigned, CrazyStruct>  multicasts_;
+    std::tr1::unordered_map<unsigned, unsigned>   group_sources_;
+    std::tr1::unordered_map<unsigned, GroupInfo>  multicasts_;
     // Adiciona informação sobre a fonte do grupo multicast.
     bool add_new_group (unsigned group_id, unsigned source_id,
                         unsigned transmitter_id);
