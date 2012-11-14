@@ -157,6 +157,7 @@ static bool handle_command (stringstream& command) {
     command >> group_id;
     if (group_id >= next) {
       cout << "## No multicast group with ID " << group_id << "." << endl;
+      return true;
     }
     routers[receiver_id].join_group(group_id);
   }
@@ -169,6 +170,7 @@ static bool handle_command (stringstream& command) {
     command >> group_id;
     if (group_id >= next) {
       cout << "## No multicast group with ID " << group_id << "." << endl;
+      return true;
     }
     routers[receiver_id].leave_group(group_id);
   }

@@ -16,6 +16,7 @@ using std::cout;
 using std::endl;
 using std::pair;
 using std::make_pair;
+using std::set;
 using std::map;
 using std::tr1::unordered_map;
 using std::tr1::unordered_set;
@@ -37,6 +38,7 @@ const static pair<string, MsgHandler> handler_list[] = {
   make_pair("ANSWER_LINKSTATE", &Router::receive_linkstate),
   make_pair("ADD_GROUP", &Router::add_group),
   make_pair("JOIN", &Router::handle_join),
+  make_pair("LEAVE", &Router::handle_leave),
   make_pair("BROADCAST", &Router::handle_broadcast),
   make_pair("UNICAST", &Router::handle_unicast),
 };
@@ -84,7 +86,9 @@ void Router::join_group (unsigned group_id) {
 }
 
 void Router::leave_group (unsigned group_id) {
-
+  stringstream msg;
+  msg << "LEAVE" << sep << group_id << sep << id();
+  unicast(group_sources_[group_id], msg.str());
 }
 
 unsigned Router::group_source (unsigned group_id) const {
@@ -120,8 +124,8 @@ void Router::report_group (unsigned group_id) const {
     if (!it->empty()) {
       cout.width(9), cout << "", cout.width(1);
       cout << "arvore nivel " << (it-group_info.by_rank.begin())+1 << ": ";
-      cout << "netid " << it->front();
-      for (list<unsigned>::const_iterator node_it = ++it->begin();
+      cout << "netid " << *it->begin();
+      for (set<unsigned>::const_iterator node_it = ++it->begin();
            node_it != it->end(); ++node_it)
         cout << ", " << "netid " << *node_it;
       cout << endl;
@@ -345,17 +349,36 @@ void Router::handle_join (unsigned id_sender, stringstream& args) {
   if (it == multicasts_.end()) 
     output() << "WARNING: join request with bad group ID." << endl;
   else {
-    MembersInfo &aux = it->second.members;
-    map<unsigned, unsigned>::iterator member_it = aux.find(joiner_id);
-    if (member_it == aux.end()) {
-      aux.insert(make_pair(joiner_id, 1));
-      size_t rank = 0;
-      for (unsigned node = joiner_id; node != id();
-           node = ls_route_ms_[node], ++rank);
-      it->second.by_rank[rank].push_back(joiner_id);
+    MembersInfo &info = it->second.members;
+    map<unsigned, unsigned>::iterator member_it = info.find(joiner_id);
+    if (member_it == info.end()) {
+      info.insert(make_pair(joiner_id, 1));
+      size_t rank = find_rank(joiner_id, group_id);
+      it->second.by_rank[rank].insert(joiner_id);
     }
     else
       member_it->second++;
+  }
+}
+
+void Router::handle_leave (unsigned id_sender, stringstream& args) {
+  unsigned group_id, leaver_id;
+  args >> group_id;
+  args >> leaver_id;
+  unordered_map<unsigned, GroupInfo>::iterator it = multicasts_.find(group_id);
+  if (it == multicasts_.end()) 
+    output() << "WARNING: leave request with bad group ID." << endl;
+  else {
+    MembersInfo &info = it->second.members;
+    map<unsigned, unsigned>::iterator member_it = info.find(leaver_id);
+    if (member_it == info.end())
+      output() << "Router " << leaver_id << " has no members in multicast "
+               << "group " << group_id << endl;
+    else if (--member_it->second <= 0) {
+      info.erase(member_it);
+      size_t rank = find_rank(leaver_id, group_id);
+      it->second.by_rank[rank].erase(leaver_id);
+    }
   }
 }
 
@@ -448,6 +471,13 @@ unsigned Router::biggest_delta () {
   }
   return router_id;
 }
+
+unsigned Router::find_rank (unsigned id_router, unsigned group_id) const {
+  size_t rank = 0;
+  for (unsigned node = id_router; node != id();
+       node = ls_route_ms_[node], ++rank);
+  return rank;
+} 
 
 } // namespace ep4
 

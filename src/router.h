@@ -9,6 +9,7 @@
 #include <vector>
 #include <queue>
 #include <map>
+#include <set>
 #include <tr1/unordered_map>
 #include <tr1/unordered_set>
 #include <tr1/functional>
@@ -43,6 +44,7 @@ class Router {
     void handle_broadcast (unsigned id_sender, std::stringstream& args);
     void add_group (unsigned id_sender, std::stringstream& args);
     void handle_join (unsigned id_sender, std::stringstream& args);
+    void handle_leave (unsigned id_sender, std::stringstream& args);
     //== Métodos para calcular rotas ==//
     // Usados para estado de enlace:
     void broadcast (const std::string& msg);
@@ -69,7 +71,7 @@ class Router {
     std::vector<double>                           ls_cost_ms_;
     //== Informações dos grupos multicast ==//
     typedef std::map<unsigned, unsigned>        MembersInfo;
-    typedef std::vector< std::list<unsigned> >  MembersByRank;
+    typedef std::vector< std::set<unsigned> >  MembersByRank;
     struct GroupInfo {
       unsigned      transmitter;
       MembersInfo   members;
@@ -91,6 +93,7 @@ class Router {
       cut_broadcast_ = cut;
       return before;
     }
+    unsigned find_rank (unsigned id_router, unsigned group_id) const;
 };
 
 } // namespace ep4
